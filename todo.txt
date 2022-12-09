@@ -1,0 +1,3 @@
+Adicionar atributo "fim" ao loanlist
+Adicionar novo método ao loanlist
+Revisar o código da bookshelf
