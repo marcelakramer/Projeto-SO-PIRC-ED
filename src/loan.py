@@ -1,26 +1,27 @@
 from datetime import date, timedelta
-from book import Book
-
-
 class UnavailableLoanRenewalError(Exception):
     def __init__(self, msg: str) -> None:
         super().__init__(msg)
 
 class Loan:
-    def __init__(self, id: int, book: Book) -> None:
+    def __init__(self, id: int, book: object) -> None:
         self.__id = id
         self.__book = book
         self.__date = date.today()
         self.__devolution = self.__date + timedelta(days = 10)
         self.__status = 'ON TIME'
+
+    
+    @property
+    def id(self) -> int:
+        return self.__id
  
     
     def __str__(self) -> str:
         return f'''
-               LOAN INFO
+               LOAN Nº{self.__id}
 
-        ID: {self.__id}
-        Book: {self.__book.__title}
+        Book: {self.__book.title}
         Date: {self.__date}
         Devolution date: {self.__devolution}
         Status: {self.__status}

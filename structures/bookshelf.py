@@ -12,7 +12,7 @@ class Node(object):
         return f'{self.book}'
   
 # Classe AVL tree 
-class AVLTree(object): 
+class AVLBookshelf(object): 
     """ Class that creates a AVL tree in memory. AVL tree is a self-balancing
         Binary Search Tree (BST) where the difference between heights
         of left and right subtrees cannot be more than one for all nodes. 
@@ -31,6 +31,7 @@ class AVLTree(object):
             self.__root = None
         else:
             self.__root = self.insert(book)
+
 
     def isEmpty(self)->bool:
         '''Method that verifies the AVL Tree is empty or not.
@@ -55,7 +56,7 @@ class AVLTree(object):
         # Step 1 - Performs a BST recursion to add the node
         if not root: 
             return Node(book) 
-        elif book < root.book__isbn: 
+        elif book < root.book.isbn: 
             root.left = self.__insert(root.left, book) 
         else: 
             root.right = self.__insert(root.right, book) 
@@ -71,20 +72,20 @@ class AVLTree(object):
         # Then, one of the following actions will be performed:
 
         # CASE 1 - Right rotation
-        if balance > 1 and book.__isbn < root.left.book__isbn: 
+        if balance > 1 and book.isbn < root.left.book.isbn: 
             return self.__rightRotate(root) 
   
         # CASE 2 - Left rotation
-        if balance < -1 and book.__isbn > root.right.book__isbn: 
+        if balance < -1 and book.isbn > root.right.book.isbn: 
             return self.__leftRotate(root) 
   
         # CASE 3 - Double rotation: Left Right 
-        if balance > 1 and book.__isbn > root.left.book__isbn: 
+        if balance > 1 and book.isbn > root.left.book.isbn: 
             root.left = self.__leftRotate(root.left) 
             return self.__rightRotate(root) 
   
         # CASE 4 - Double rotation: Right Left 
-        if balance < -1 and book.__isbn < root.right.book__isbn: 
+        if balance < -1 and book.isbn < root.right.book.isbn: 
             root.right = self.__rightRotate(root.right) 
             return self.__leftRotate(root) 
   
@@ -152,7 +153,7 @@ class AVLTree(object):
   
     def getBalance(self, node:Node)->int: 
         """
-        Calculates the balancing book of the node passed as an argument.
+        Calculates the balancing factor of the node passed as an argument.
 
          Arguments:
          🇧🇷
@@ -197,9 +198,9 @@ class AVLTree(object):
         # Step 1 - Perform standard BST delete 
         if not root: 
             return root   
-        elif book < root.book: 
+        elif book.isbn < root.book.isbn: 
             root.left = self.__delete(root.left, book)   
-        elif book > root.book: 
+        elif book.isbn > root.book: 
             root.right = self.__delete(root.right, book)   
         else: 
             if root.left is None: 
@@ -270,12 +271,12 @@ class AVLTree(object):
     def searchBook(self, book_isbn: int) -> bool:
         self.__searchBook(self.__root, book_isbn)
 
-    def __searchBook(self, book: Node, book_isbn: int) -> bool: 
-        if not book: 
+    def __searchBook(self, node: Node, book_isbn: int) -> bool: 
+        if not node: 
             return False
   
-        if book.__isbn == book_isbn:
+        if node.book.isbn == book_isbn:
             return True
             
-        self.__searchBook(book.left, book_isbn) 
-        self.__searchBook(book.right, book_isbn) 
+        self.__searchBook(node.left, book_isbn) 
+        self.__searchBook(node.right, book_isbn) 

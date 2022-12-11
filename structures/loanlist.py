@@ -4,8 +4,8 @@ class LoanListException(Exception):
 
 
 class Node:
-    def __init__(self, value: any):
-        self.value = value
+    def __init__(self, loan: object):
+        self.loan = loan
         self.next = None
 
     def __str__(self):
@@ -17,46 +17,46 @@ class LoanList:
         self.__start = None
         self.__length = 0
 
+    
+    def __str__(self) -> str:
+        s = '{ '
+        cursor = self.__start
+        while(cursor != None):
+            s += f'\n[{cursor.loan}\n]'
+            cursor = cursor.next
+        s += '}'
+        return s
 
-    def isEmpty(self)->bool:
+    
+    def __len__(self) -> int:
+        return self.__length
+
+
+    def isEmpty(self) -> bool:
         return self.__start == None
 
-
-    def len(self)->int:
-        return self.__length
-
-
-    def __len__(self)->int:
-        return self.__length
-
     
-    def search(self, id:any)->int:
+    def search(self, id: int) -> bool:
         cursor = self.__start
-        count = 1
         while(cursor != None):
-            if cursor.value == id:
-                return  count
-            count += 1
+            if cursor.loan.id == id:
+                return True
             cursor = cursor.next
-        raise  LoanListException(f'Loan with id "{id}" does not exist.', 1)
-
-    def modify(self, position:int, value: any):
-        try:
-            assert position > 0 and position <= self.__length
-            count = 1
-            cursor = self.__start
-            while( count < position):
-                cursor = cursor.prox
-                count += 1
-
-            cursor.carga = value
-        except AssertionError:
-            raise LoanListException(f'Invalid position for the current loan list with {self.__length} elementos')
+        return False
 
     
-    def insert(self, book: object):
+    def get(self, id: int) -> object:
+        cursor = self.__start
+        while(cursor != None):
+            if cursor.loan.id == id:
+                return cursor.loan
+            cursor = cursor.next
+        raise LoanListException(f'Loan with id "{id}" does not exist.')
+    
 
-        new = Node(book)
+    def insert(self, loan: object) -> None:
+
+        new = Node(loan)
         # empty list
         if (self.isEmpty()):
             self.__start = new
@@ -75,44 +75,26 @@ class LoanList:
         self.__length += 1
 
 
-    def remove(self, position:int)->any:
+    def remove(self, id:int) -> bool:
         try:
-            assert position > 0 and position <= self.__length
+            if not self.search(id):
+                raise LoanListException(f'There is not a loan with this id.')
 
-            if( self.isEmpty() ):
-                raise LoanListException(f'Não é possível remover de uma lista vazia')
+            if self.isEmpty():
+                raise LoanListException(f'Empty loan list.')
 
             cursor = self.__start
-            count = 1
 
-            while( count <= position-1 ) :
+            while(cursor.loan.id != id) :
                 previous = cursor
                 cursor = cursor.next
-                count+=1
 
-            value = cursor.value
-
-            if( position == 1):
+            if( cursor == self.__start):
                 self.__start = cursor.next
             else:
                 previous.next = cursor.next
 
             self.__length -= 1
-            return value
         
         except TypeError:
-            raise LoanListException(f'A posição deve ser um número inteiro')            
-        except AssertionError:
-            raise LoanListException(f'A position deve ser um número entre 1 e {self.__length}')
-        except:
-            raise
-
-    
-    def __str__(self):
-        s = '[ '
-        cursor = self.__start
-        while(cursor != None):
-            s += f'{cursor.value} '
-            cursor = cursor.near
-        s += ']'
-        return s
+            raise LoanListException(f'The id must be an integer.')            
