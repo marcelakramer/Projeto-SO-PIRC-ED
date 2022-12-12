@@ -1,2 +1,2 @@
 Desenvolver os códigos do cliente e servidor
-Desenvolver as funções de utils
+Testar os códigos desenvolvidos até o momento

@@ -1,7 +1,4 @@
 from datetime import date, timedelta
-class UnavailableLoanRenewalError(Exception):
-    def __init__(self, msg: str) -> None:
-        super().__init__(msg)
 
 class Loan:
     def __init__(self, id: int, book: object) -> None:
@@ -9,12 +6,17 @@ class Loan:
         self.__book = book
         self.__date = date.today()
         self.__devolution = self.__date + timedelta(days = 10)
+        self.__returned = None
         self.__status = 'ON TIME'
 
     
     @property
     def id(self) -> int:
         return self.__id
+
+    @property
+    def status(self) -> str:
+        return self.__status
  
     
     def __str__(self) -> str:
@@ -29,17 +31,12 @@ class Loan:
 
     
     def update_status(self) -> None:
-        delta = self.__devolution - self.__date
-        if delta.days > 10:
-            self.__status == 'LATE'
+        if self.__returned == None:
+            delta = self.__devolution - self.__date
+            if delta.days > 10:
+                self.__status == 'LATE'
 
+            else:
+                self.__status == 'ON TIME'
         else:
-            self.__status == 'ON TIME'
-
-    
-    def renew(self) -> bool:
-        if self.__status == 'Late':
-            raise UnavailableLoanRenewalError('The loan has already passed the date of devolution.')
-        
-        self.__devolution += timedelta(days = 10)
-        return True
+            self.__status = 'RETURNED'

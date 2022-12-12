@@ -1,3 +1,4 @@
+from structures.exceptions import AbsentObjectException
 class Node(object): 
     '''Class used to create a generic tree node instance in memory'''
     def __init__(self, book: object): 
@@ -41,6 +42,7 @@ class AVLBookshelf(object):
         '''
         return self.__root == None
 
+
     def insert(self, book:object):
         ''' Insert a new node in AVL Tree recursively from root. The node will be created with
             "book" as content.
@@ -49,6 +51,7 @@ class AVLBookshelf(object):
             self.__root = Node(book)
         else:
             self.__root = self.__insert(self.__root, book)
+  
   
     def __insert(self, root, book):
         # Step 1 - Performs a BST recursion to add the node
@@ -89,6 +92,7 @@ class AVLBookshelf(object):
   
         return root 
   
+
     def __leftRotate(self, p:Node) -> Node: 
         """
         Performs the 'left' rotation taking the no 'p' as a base
@@ -111,6 +115,7 @@ class AVLBookshelf(object):
         # Return the new root "u" node 
         return u 
   
+
     def __rightRotate(self, p:Node)->Node: 
         """ Performs the rotation to the right taking the no "p" as a base
              to make "u" as new root
@@ -132,6 +137,7 @@ class AVLBookshelf(object):
         # Return the new root ("u" node)
         return u 
   
+
     def getHeight(self, node:Node)->int: 
         """ Gets the height relative to the node passed as an argument
              Arguments:
@@ -149,6 +155,7 @@ class AVLBookshelf(object):
   
         return node.height 
   
+
     def getBalance(self, node:Node)->int: 
         """
         Calculates the balancing factor of the node passed as an argument.
@@ -168,8 +175,10 @@ class AVLBookshelf(object):
   
         return self.getHeight(node.left) - self.getHeight(node.right) 
   
+
     def InOrder(self):
         self.__InOrder(self.__root)
+
 
     def __InOrder(self, root): 
         if not root: 
@@ -178,6 +187,7 @@ class AVLBookshelf(object):
         self.__InOrder(root.left)
         print("{0} ".format(root.book), end="")  
         self.__InOrder(root.right) 
+
 
     def delete(self, book:object):
         if(self.__root is not None):
@@ -252,10 +262,11 @@ class AVLBookshelf(object):
         return root 
 
         
-    def searchBook(self, book_isbn:any ):
+    def searchBook(self, book_isbn: int) -> bool:
         return self.__searchBook(book_isbn, self.__root)
     
-    def __searchBook(self, book_isbn, node:Node):
+
+    def __searchBook(self, book_isbn: int, node: Node) -> bool:
         if node is None:
             return False
         if ( book_isbn == node.book.isbn):
@@ -265,4 +276,30 @@ class AVLBookshelf(object):
         elif ( book_isbn > node.book.isbn and node.right != None):
             return self.__searchBook( book_isbn, node.right)
         else:
-            return False 
+            return False
+
+    def getBook(self, book_isbn: int) -> object:
+        if not self.searchBook(book_isbn):
+            raise AbsentObjectException
+        return self.__getBook(book_isbn, self.__root)
+
+    
+    def __getBook(self, book_isbn: int, node: Node) -> object:
+        if node is None:
+            return 
+        if ( book_isbn == node.book.isbn):
+            return node.book
+        elif ( book_isbn < node.book.isbn and node.left != None):
+            return self.__searchBook( book_isbn, node.left)
+        elif ( book_isbn > node.book.isbn and node.right != None):
+            return self.__searchBook( book_isbn, node.right)
+        else:
+            return 
+
+
+    def isAvailable(self, book_isbn: int) -> bool:
+        if not self.searchBook(book_isbn):
+            raise AbsentObjectException
+        
+        book = self.getBook(book_isbn)
+        return book.status

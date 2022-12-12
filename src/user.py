@@ -1,15 +1,17 @@
-from structures.loanlist import LoanList
+from structures.linkedlist import LinkedList
 
+
+# the att username has been replaced by 'id' for now, but we will change it back later
 class User:
     def __init__(self, username: str, password: str) -> None:
-        self.__username = username
+        self.__id = username 
         self.__password = password
-        self.loans = LoanList()
+        self.loans = LinkedList()
 
     
     @property
-    def username(self) -> str:
-        return self.__username
+    def id(self) -> str:
+        return self.__id
 
 
     @property
@@ -21,6 +23,6 @@ class User:
         return f'''
                 USER INFO
 
-            Username: {self.__username}
+            Username: {self.__id}
             Books loaned: {self.loans}'''
         
