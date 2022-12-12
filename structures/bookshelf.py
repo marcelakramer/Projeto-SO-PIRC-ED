@@ -1,5 +1,3 @@
-from src.book import Book
-
 class Node(object): 
     '''Class used to create a generic tree node instance in memory'''
     def __init__(self, book: object): 
@@ -56,7 +54,7 @@ class AVLBookshelf(object):
         # Step 1 - Performs a BST recursion to add the node
         if not root: 
             return Node(book) 
-        elif book < root.book.isbn: 
+        elif book.isbn < root.book.isbn: 
             root.left = self.__insert(root.left, book) 
         else: 
             root.right = self.__insert(root.right, book) 
@@ -170,16 +168,16 @@ class AVLBookshelf(object):
   
         return self.getHeight(node.left) - self.getHeight(node.right) 
   
-    def preOrder(self):
-        self.__preOrder(self.__root)
+    def InOrder(self):
+        self.__InOrder(self.__root)
 
-    def __preOrder(self, root): 
+    def __InOrder(self, root): 
         if not root: 
             return
   
-        print("{0} ".format(root.book), end="") 
-        self.__preOrder(root.left) 
-        self.__preOrder(root.right) 
+        self.__InOrder(root.left)
+        print("{0} ".format(root.book), end="")  
+        self.__InOrder(root.right) 
 
     def delete(self, book:object):
         if(self.__root is not None):
@@ -200,7 +198,7 @@ class AVLBookshelf(object):
             return root   
         elif book.isbn < root.book.isbn: 
             root.left = self.__delete(root.left, book)   
-        elif book.isbn > root.book: 
+        elif book.isbn > root.book.isbn: 
             root.right = self.__delete(root.right, book)   
         else: 
             if root.left is None: 
@@ -251,32 +249,20 @@ class AVLBookshelf(object):
             root.right = self.__rightRotate(root.right) 
             return self.__leftRotate(root) 
   
-        return root  
+        return root 
 
-    def getRoot(self)->Node :
-        return self.__root
+        
+    def searchBook(self, book_isbn:any ):
+        return self.__searchBook(book_isbn, self.__root)
     
-    def getMinbookNode(self, root:Node)->Node:
-        """
-        Method that gets the smallest node from 'root'
-        passed as argument (leftmost node)
-        """
-        if root is None or root.left is None:
-            return root
- 
-        return self.getMinbookNode(root.left)
-
-
-
-    def searchBook(self, book_isbn: int) -> bool:
-        self.__searchBook(self.__root, book_isbn)
-
-    def __searchBook(self, node: Node, book_isbn: int) -> bool: 
-        if not node: 
+    def __searchBook(self, book_isbn, node:Node):
+        if node is None:
             return False
-  
-        if node.book.isbn == book_isbn:
+        if ( book_isbn == node.book.isbn):
             return True
-            
-        self.__searchBook(node.left, book_isbn) 
-        self.__searchBook(node.right, book_isbn) 
+        elif ( book_isbn < node.book.isbn and node.left != None):
+            return self.__searchBook( book_isbn, node.left)
+        elif ( book_isbn > node.book.isbn and node.right != None):
+            return self.__searchBook( book_isbn, node.right)
+        else:
+            return False 
