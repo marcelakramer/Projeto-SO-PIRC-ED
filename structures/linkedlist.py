@@ -16,12 +16,11 @@ class LinkedList:
 
     
     def __str__(self) -> str:
-        s = '{ '
+        s = ''
         cursor = self.__start
         while(cursor != None):
             s += f'{cursor.content}'
             cursor = cursor.next
-        s += '}'
         return s
 
     
@@ -50,7 +49,7 @@ class LinkedList:
             cursor = cursor.next
         
         return AbsentObjectException
-    
+            
 
     def insert(self, content: object) -> None:
 

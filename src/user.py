@@ -23,8 +23,6 @@ class User:
 
     def __str__(self) -> str:
         return f'''
-                USER INFO
-
-            Username: {self.__id}
-            Books loaned: {self.loans}'''
-        
+Username: '{self.__id}'
+Loans: {self.loans}
+            ''' 

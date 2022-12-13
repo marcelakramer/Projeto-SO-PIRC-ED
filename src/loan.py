@@ -34,15 +34,9 @@ class Loan:
     def status(self, new_status: date) -> None:
         self.__status = new_status
     
-    def __str__(self) -> str:
-        return f'''
-               LOAN Nº{self.__id}
 
-        Book: {self.__book.title}
-        Date: {self.__date}
-        Devolution date: {self.__devolution}
-        Status: {self.__status}
-        '''
+    def __str__(self) -> str:
+        return f"""[ID: {self.__id} | Book: '{self.__book.title}' | Devolution Date: {self.__devolution} | Status: {self.__status}]\n       """
 
     
     def update_status(self) -> None:

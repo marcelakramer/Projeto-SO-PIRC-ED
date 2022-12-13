@@ -177,10 +177,11 @@ class AVLBookshelf(object):
   
 
     def InOrder(self):
+        print('''                             BOOKS\n''')
         self.__InOrder(self.__root)
 
 
-    def __InOrder(self, root): 
+    def __InOrder(self, root: Node): 
         if not root: 
             return
   

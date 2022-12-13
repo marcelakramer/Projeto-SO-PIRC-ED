@@ -17,7 +17,7 @@ class Library:
         self.__loans = LinkedList()
         self.__users = LinkedList()
         self.__bookshelf = AVLBookshelf()
-        self.autoinc = 1
+        self.__autoinc = 1
 
 
     @property
@@ -70,8 +70,8 @@ class Library:
         book = self.__bookshelf.getBook(book_isbn)
         book.update_status()
 
-        newLoan = Loan(self.autoinc, book)
-        self.autoinc += 1 # check autoincrement
+        newLoan = Loan(self.__autoinc, book)
+        self.__autoinc += 1 # check autoincrement
 
         self.loans.insert(newLoan)
         user.loans.insert(newLoan)
@@ -87,6 +87,7 @@ class Library:
             raise AbsentObjectException
 
         loan = user.loans.get(loan_id)
+        loan.update_status()
         return str(loan)
 
     
@@ -94,6 +95,7 @@ class Library:
         if not self.login(username, password):
             raise LoginFailException
 
+        # falta achar um jeito de colocar o loan.update aqui
         user = self.__users.get(username)
         return str(user.loans)
 
@@ -108,6 +110,7 @@ class Library:
             raise AbsentObjectException
 
         loan = user.loans.get(loan_id)
+        loan.update_status()
         if loan.status == 'LATE':
                 raise UnavailableObjectException
         else:
