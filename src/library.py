@@ -6,6 +6,7 @@ from book import Book
 
 import sys
 sys.path.append('./structures')
+
 from bookshelf import AVLBookshelf
 from linkedlist import LinkedList
 from exceptions import LoginFailException, AbsentObjectException, UnavailableObjectException
