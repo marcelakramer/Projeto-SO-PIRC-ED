@@ -1,4 +1,4 @@
-from .exceptions import TypeErrorException, AbsentObjectException, EmptyListException
+from exceptions import TypeErrorException, AbsentObjectException, EmptyListException
 
 class Node:
     def __init__(self, content: object):

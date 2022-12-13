@@ -1,4 +1,4 @@
-from structures.exceptions import AbsentObjectException
+from exceptions import AbsentObjectException
 class Node(object): 
     '''Class used to create a generic tree node instance in memory'''
     def __init__(self, book: object): 
@@ -185,7 +185,7 @@ class AVLBookshelf(object):
             return
   
         self.__InOrder(root.left)
-        print("{0} ".format(root.book), end="")  
+        print(f'{root.book}', end="\n")  
         self.__InOrder(root.right) 
 
 
@@ -290,9 +290,9 @@ class AVLBookshelf(object):
         if ( book_isbn == node.book.isbn):
             return node.book
         elif ( book_isbn < node.book.isbn and node.left != None):
-            return self.__searchBook( book_isbn, node.left)
+            return self.__getBook( book_isbn, node.left)
         elif ( book_isbn > node.book.isbn and node.right != None):
-            return self.__searchBook( book_isbn, node.right)
+            return self.__getBook( book_isbn, node.right)
         else:
             return 
 

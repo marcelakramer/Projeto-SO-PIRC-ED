@@ -1,10 +1,15 @@
+from datetime import timedelta
+
 from user import User
 from loan import Loan
 from book import Book
-from structures.bookshelf import AVLBookshelf
-from structures.linkedlist import LinkedList
-from structures.exceptions import LoginFailException, AbsentObjectException, UnavailableObjectException
-from time import timedelta
+
+import sys
+sys.path.append('./structures')
+from bookshelf import AVLBookshelf
+from linkedlist import LinkedList
+from exceptions import LoginFailException, AbsentObjectException, UnavailableObjectException
+
 
 
 class Library:
@@ -12,8 +17,22 @@ class Library:
         self.__loans = LinkedList()
         self.__users = LinkedList()
         self.__bookshelf = AVLBookshelf()
+        self.autoinc = 1
 
+
+    @property
+    def loans(self) -> object:
+        return self.__loans
+
+    @property
+    def users(self) -> object:
+        return self.__users
+
+    @property
+    def bookshelf(self) -> object:
+        return self.__bookshelf
     
+
     def register_user(self, username: str, password: str) -> None:
         newUser = User(username, password)
         self.__users.insert(newUser)
@@ -48,10 +67,11 @@ class Library:
 
         user = self.__users.get(username)
 
-        book = self.__bookshelf.get(book_isbn)
+        book = self.__bookshelf.getBook(book_isbn)
         book.update_status()
 
-        newLoan = Loan(1, book)
+        newLoan = Loan(self.autoinc, book)
+        self.autoinc += 1 # check autoincrement
 
         self.loans.insert(newLoan)
         user.loans.insert(newLoan)
@@ -89,7 +109,7 @@ class Library:
 
         loan = user.loans.get(loan_id)
         if loan.status == 'LATE':
-                return False # raise
+                raise UnavailableObjectException
         else:
             loan.devolution += timedelta(days = 10)
             self.loans.get(loan_id).devolution += timedelta(days = 10)

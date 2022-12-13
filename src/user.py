@@ -1,5 +1,7 @@
-from structures.linkedlist import LinkedList
+import sys
+sys.path.append('./structures')
 
+from linkedlist import LinkedList
 
 # the att username has been replaced by 'id' for now, but we will change it back later
 class User:
