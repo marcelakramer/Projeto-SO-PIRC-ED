@@ -66,34 +66,17 @@ class Library:
         if not self.check_available(book_isbn):
             raise UnavailableObjectException
 
-        print(1)
         user = self.__users.get(username)
 
-        print(2)
         book = self.__bookshelf.getBook(book_isbn)
-
-        print(3)
         book.update_status()
 
-
-
-        print(4)
         newLoan = Loan(self.__autoinc, book)
-
-        print(5)
         self.__autoinc += 1 # check autoincrement
-
-
-        print(6)
+    
         self.loans.insert(newLoan)
-
-        print(7)
         user.loans.insert(newLoan)
-
-
-        print(8)
-
-        return True
+        return True, newLoan.id
 
     def check_loan_info(self, loan_id: int, username: str, password: str) -> str:
         if not self.login(username, password):

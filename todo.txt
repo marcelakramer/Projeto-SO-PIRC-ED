@@ -1,2 +1,3 @@
-Desenvolver os códigos do cliente e servidor
-Testar os códigos desenvolvidos até o momento
+desenvolver metodo pra retornar os loans de um user
+fazer dar erro quando o cliente enviar 'register x' por exemplo 
+definir código de erro para cada uma das exceções e para OK

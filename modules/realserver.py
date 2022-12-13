@@ -19,10 +19,10 @@ def processa_msg_cliente(msg, con, cliente):
 		try:
 			library.register_user(msg[1],msg[2])
 			print('funcionou', library.users)
-			con.send(str.encode('+OK {}\n'.format(msg[1])))
+			con.send(str.encode(f"+OK \nUser '{msg[1]}' registered successfully."))
    
 		except AlreadyExistingObjectException:
-			con.send(str.encode(f'+ERROR: User already registered\n'))
+			con.send(str.encode(f'-ERROR\nUser already registered'))
 
 		""""
 		nome_arq = " ".join(msg[1:])
@@ -40,59 +40,56 @@ def processa_msg_cliente(msg, con, cliente):
 
 	elif msg[0].upper() == 'CHECK':
 		try:
+			book_title = library.bookshelf.getBook(int(msg[1])).title
 			if library.check_available(int(msg[1])):
-				print('EXISTE')
-				con.send(str.encode('+OK {}\n'.format(msg[1])))
+				con.send(str.encode(f"+OK \n'{book_title}' is available for loan.\n"))
+			else:
+				con.send(str.encode(f"-ERROR \nThe book '{book_title}' is unavailable for loan.\n"))
 
-
-		except Exception as e:
-			con.send(str.encode('-ERROR {}\n'.format(e)))
+		except AbsentObjectException:
+			con.send(str.encode(f"-ERROR \nThe book '{book_title}' is not registered.\n"))
 
 	elif msg[0].upper() == 'LOAN':
 		try:
-			if library.loan_book(int(msg[1]), msg[2], msg[3]):
-				print('funcionou', library.users)
-				con.send(str.encode('+OK {}\n'.format(msg[1])))
+			loan = library.loan_book(int(msg[1]), msg[2], msg[3])
+			if loan[0]:
+				book_title = library.bookshelf.getBook(int(msg[1])).title
+				con.send(str.encode(f"+OK \nLoan Nº{loan[1]} of book '{book_title}' made successfully by '{msg[2]}'.\n"))
    
-		except Exception as e:
-			con.send(str.encode('-ERROR {}\n'.format(e)))
+		except UnavailableObjectException:
+			con.send(str.encode(f"-ERROR \nThe book '{book_title}' is unavailable.\n"))
 
 	elif msg[0].upper() == 'INFO':
-		# check_loan_info
-
 		try:
-			res = library.check_loan_info(int(msg[1]), msg[2], msg[3])
+			loan_info = library.check_loan_info(int(msg[1]), msg[2], msg[3])
 
-			con.send(str.encode(res))
+			con.send(str.encode(f"+OK \nLoan information: {loan_info}\n"))
    
-		except Exception as e:
-			con.send(str.encode('-ERROR {}\n'.format(e)))
+		except AbsentObjectException:
+			con.send(str.encode(f"-ERROR \n'User {msg[2]}' has no loan Nº {msg[1]}.\n"))
 
 	elif msg[0].upper() == 'RENEW':
-		# check_loan_info
-
 		try:
 			if library.renew_loan(int(msg[1]), msg[2], msg[3]):
-				con.send(str.encode('+OK Loan was renewed succesfully\n'))
+				con.send(str.encode(f"+OK \nLoan Nº{msg[1]} was renewed succesfully by '{msg[2]}'.\n"))
    
-		except Exception as e:
-			con.send(str.encode('-ERROR {}\n'.format(e)))
+		except AbsentObjectException:
+			con.send(str.encode(f"-ERROR \n'User {msg[2]}' has no loan Nº {msg[1]}.\n"))
+		except UnavailableObjectException:
+			con.send(str.encode(f"+OK \nLoan Nº{msg[1]} is already late.\n"))
+
 
 
 	elif msg[0].upper() == 'RETURN':
-		# check_loan_info
-
 		try:
 			library.return_book(int(msg[1]), msg[2], msg[3])
-			
-			con.send(str.encode('+OK Loan was returned succesfully\n'))
+			con.send(str.encode(f"+OK \nLoan Nº{msg[1]} was returned succesfully by '{msg[2]}'.\n"))
    
-		except Exception as e:
-			con.send(str.encode('-ERROR {}\n'.format(e)))
-
+		except AbsentObjectException:
+			con.send(str.encode(f"-ERROR \n'User {msg[2]}' has no loan Nº {msg[1]}.\n"))
 
 	else:
-		con.send(str.encode('-ERR Invalid command\n'))
+		con.send(str.encode('-ERROR \nInvalid command.\n'))
 	return True
 	
 def processa_cliente(con, cliente):
