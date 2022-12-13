@@ -1,15 +1,29 @@
-#!/usr/bin/env python3
+import sys
+sys.path.append('./..')
+
+#import src.library as Library
+from src.library import Library
+from structures.exceptions import *
+
 import socket
 import os
+
 TAM_MSG = 1024 # Tamanho do bloco de mensagem
 HOST = '0.0.0.0' # IP do Servidor
-PORT = 40000 # Porta que o Servidor escuta
+PORT = 40003 # Porta que o Servidor escuta
 def processa_msg_cliente(msg, con, cliente):
 	msg = msg.decode()
 	print('Cliente', cliente, 'enviou', msg)
 	msg = msg.split()
 	if msg[0].upper() == 'REGISTER' and len(msg) == 3:
-		library.register_user(msg[1],msg[2])
+		try:
+			library.register_user(msg[1],msg[2])
+			print('funcionou', library.users)
+			con.send(str.encode('+OK {}\n'.format(msg[1])))
+   
+		except AlreadyExistingObjectException:
+			con.send(str.encode(f'+ERROR: User already registered\n'))
+
 		""""
 		nome_arq = " ".join(msg[1:])
 		print('Arquivo solicitado:', nome_arq)
@@ -24,30 +38,59 @@ def processa_msg_cliente(msg, con, cliente):
 		except Exception as e:
 			con.send(str.encode('-ERR {}\n'.format(e)))"""
 
-		con.send(str.encode(f'+OK User {msg[1]} registered succesfully \n'))
-	elif msg[0].upper() == 'CWD':
-		nome_dir = " ".join(msg[1:])
-		print('Novo Diretorio:', nome_dir)
+	elif msg[0].upper() == 'CHECK':
 		try:
-			os.chdir(nome_dir)
-			con.send(str.encode('+OK \n'))
+			if library.check_available(int(msg[1])):
+				print('EXISTE')
+				con.send(str.encode('+OK {}\n'.format(msg[1])))
+
+
 		except Exception as e:
-			con.send(str.encode('-ERR {}\n'.format(e)))
-	elif msg[0].upper() == 'LIST':
-		lista_arq = os.listdir('.')
-		con.send(str.encode('+OK {}\n'.format(len(lista_arq))))
-		for nome_arq in lista_arq:
-			if os.path.isfile(nome_arq):
-				status_arq = os.stat(nome_arq)
-				con.send(str.encode('arq: {} - {:.1f}KB\n'.
-					format(nome_arq, status_arq.st_size/1024)))
-			elif os.path.isdir(nome_arq):
-				con.send(str.encode('dir: {}\n'.format(nome_arq)))
-			else:
-				con.send(str.encode('esp: {}\n'.format(nome_arq)))
-	elif msg[0].upper() == 'QUIT':
-		con.send(str.encode('+OK\n'))
-		return False
+			con.send(str.encode('-ERROR {}\n'.format(e)))
+
+	elif msg[0].upper() == 'LOAN':
+		try:
+			if library.loan_book(int(msg[1]), msg[2], msg[3]):
+				print('funcionou', library.users)
+				con.send(str.encode('+OK {}\n'.format(msg[1])))
+   
+		except Exception as e:
+			con.send(str.encode('-ERROR {}\n'.format(e)))
+
+	elif msg[0].upper() == 'INFO':
+		# check_loan_info
+
+		try:
+			res = library.check_loan_info(int(msg[1]), msg[2], msg[3])
+
+			con.send(str.encode(res))
+   
+		except Exception as e:
+			con.send(str.encode('-ERROR {}\n'.format(e)))
+
+	elif msg[0].upper() == 'RENEW':
+		# check_loan_info
+
+		try:
+			if library.renew_loan(int(msg[1]), msg[2], msg[3]):
+				con.send(str.encode('+OK Loan was renewed succesfully\n'))
+   
+		except Exception as e:
+			con.send(str.encode('-ERROR {}\n'.format(e)))
+
+
+	elif msg[0].upper() == 'RETURN':
+		# check_loan_info
+
+		try:
+			library.return_book(int(msg[1]), msg[2], msg[3])
+			
+			con.send(str.encode('+OK Loan was returned succesfully\n'))
+   
+		except Exception as e:
+			con.send(str.encode('-ERROR {}\n'.format(e)))
+
+
 	else:
 		con.send(str.encode('-ERR Invalid command\n'))
 	return True
@@ -66,6 +109,8 @@ sock.bind(serv)
 sock.listen(50)
 
 library = Library()
+library.register_book(22, 'Bolsonarismo Radical')
+library.register_book(13, 'Corinthians')
 
 while True:
 	try:

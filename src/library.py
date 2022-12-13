@@ -1,15 +1,15 @@
 from datetime import timedelta
 
-from user import User
-from loan import Loan
-from book import Book
-
 import sys
-sys.path.append('./structures')
+sys.path.append('./..')
 
-from bookshelf import AVLBookshelf
-from linkedlist import LinkedList
-from exceptions import LoginFailException, AbsentObjectException, UnavailableObjectException
+from src.user import User
+from src.loan import Loan
+from src.book import Book
+
+from structures.bookshelf import AVLBookshelf
+from structures.linkedlist import LinkedList
+from structures.exceptions import LoginFailException, AbsentObjectException, UnavailableObjectException
 
 
 
@@ -66,18 +66,35 @@ class Library:
         if not self.check_available(book_isbn):
             raise UnavailableObjectException
 
+        print(1)
         user = self.__users.get(username)
 
+        print(2)
         book = self.__bookshelf.getBook(book_isbn)
+
+        print(3)
         book.update_status()
 
+
+
+        print(4)
         newLoan = Loan(self.__autoinc, book)
+
+        print(5)
         self.__autoinc += 1 # check autoincrement
 
+
+        print(6)
         self.loans.insert(newLoan)
+
+        print(7)
         user.loans.insert(newLoan)
 
-    
+
+        print(8)
+
+        return True
+
     def check_loan_info(self, loan_id: int, username: str, password: str) -> str:
         if not self.login(username, password):
             raise LoginFailException

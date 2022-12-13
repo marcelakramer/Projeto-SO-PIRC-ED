@@ -1,4 +1,8 @@
-from exceptions import TypeErrorException, AbsentObjectException, EmptyListException
+
+import sys
+sys.path.append('./..')
+
+from structures.exceptions import TypeErrorException, AbsentObjectException, EmptyListException, AlreadyExistingObjectException
 
 class Node:
     def __init__(self, content: object):
@@ -52,6 +56,9 @@ class LinkedList:
             
 
     def insert(self, content: object) -> None:
+        
+        if self.search(content.id):
+            raise AlreadyExistingObjectException
 
         new = Node(content)
         # empty list

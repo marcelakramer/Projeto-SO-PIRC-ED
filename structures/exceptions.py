@@ -11,6 +11,11 @@ class AbsentObjectException(Exception):
 class UnavailableObjectException(Exception):
     def __init__(self):
         super().__init__('This object is unavailable.')
+        
+
+class AlreadyExistingObjectException(Exception):
+    def __init__(self):
+        super().__init__('This object already exists.')
 
 
 class EmptyListException(Exception):

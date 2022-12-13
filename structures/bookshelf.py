@@ -1,4 +1,7 @@
-from exceptions import AbsentObjectException
+import sys
+sys.path.append('./..')
+
+from structures.exceptions import AbsentObjectException
 class Node(object): 
     '''Class used to create a generic tree node instance in memory'''
     def __init__(self, book: object): 

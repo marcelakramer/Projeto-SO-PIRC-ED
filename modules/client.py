@@ -3,7 +3,7 @@ import socket
 import sys
 TAM_MSG = 1024 # Tamanho do bloco de mensagem
 HOST = '127.0.0.1' # IP do Servidor
-PORT = 40000 # Porta que o Servidor escuta
+PORT = 40003 # Porta que o Servidor escuta
 def decode_cmd_usr(cmd_usr):
 	cmd_map = {
 		'register': 'register',  # [USERNAME] [PASSWORD] = register a new user
@@ -12,7 +12,7 @@ def decode_cmd_usr(cmd_usr):
 		'info': 'info', # [LOAN ID] = check loan's info
 		'renew': 'renew', # [LOAN ID] [USERNAME] [PASSWORD] = renew a book loan
 		'return': 'return', # [LOAN ID] = return a book
-		'quit': 'quit', # [LOAN ID] = return a book
+		'quit': 'quit', # quit the connection
 	}
 	tokens = cmd_usr.split()
 	if tokens[0].lower() in cmd_map:
@@ -72,73 +72,42 @@ while True:
 			# data = sock.recv(TAM_MSG)
 			#print(f'data 3: {data}')
 			if not data: break
+
+			
 			
 			# data = residual + data.decode()
 
 		elif cmd[0] == 'CHECK':
-			nome_arq = " ".join(cmd[1:])
-			print('Recebendo:', nome_arq)
-			arq = open(nome_arq, "wb")
-			tam_arquivo = int(msg_status.split()[1])
-			while True:
-				arq.write(dados)
-				tam_arquivo -= len(data)
-				if tam_arquivo == 0: break
-				data = sock.recv(TAM_MSG)
-				if not data: break
-			arq.close()
+			print(f'data 2: {data}')
+
+
+			if not data: break
+
 
 		elif cmd[0] == 'LOAN':
-			nome_arq = " ".join(cmd[1:])
-			print('Recebendo:', nome_arq)
-			arq = open(nome_arq, "wb")
-			tam_arquivo = int(msg_status.split()[1])
-			while True:
-				arq.write(data)
-				tam_arquivo -= len(data)
-				if tam_arquivo == 0: break
-				dados = sock.recv(TAM_MSG)
-				if not dados: break
-			arq.close()
+			print(f'data 2: {data}')
+
+
+			if not data: break
 
 		elif cmd[0] == 'INFO':
-			nome_arq = " ".join(cmd[1:])
-			print('Recebendo:', nome_arq)
-			arq = open(nome_arq, "wb")
-			tam_arquivo = int(msg_status.split()[1])
-			while True:
-				arq.write(dados)
-				tam_arquivo -= len(data)
-				if tam_arquivo == 0: break
-				dados = sock.recv(TAM_MSG)
-				if not dados: break
-			arq.close()
+			print(f'data 2: {data}')
+
+
+			if not data: break
+
 
 		elif cmd[0] == 'RENEW':
-			nome_arq = " ".join(cmd[1:])
-			print('Recebendo:', nome_arq)
-			arq = open(nome_arq, "wb")
-			tam_arquivo = int(msg_status.split()[1])
-			while True:
-				arq.write(dados)
-				tam_arquivo -= len(data)
-				if tam_arquivo == 0: break
-				dados = sock.recv(TAM_MSG)
-				if not dados: break
-			arq.close()
+			print(f'data 2: {data}')
 
-		elif cmd[0] == 'QUIT':
-			nome_arq = " ".join(cmd[1:])
-			print('Recebendo:', nome_arq)
-			arq = open(nome_arq, "wb")
-			tam_arquivo = int(msg_status.split()[1])
-			while True:
-				arq.write(dados)
-				tam_arquivo -= len(data)
-				if tam_arquivo == 0: break
-				dados = sock.recv(TAM_MSG)
-				if not dados: break
-			arq.close()
+
+			if not data: break
+
+		elif cmd[0] == 'RETURN':
+			print(f'data 2: {data}')
+
+
+			if not data: break
 
 
 sock.close()
