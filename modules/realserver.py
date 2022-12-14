@@ -15,7 +15,7 @@ PORT = 40000
 
 def process_msg_client(msg, con, client):
 	msg = msg.decode()
-	print('client', client, 'enviou', msg)
+	print(f'Client {client} sent {msg}')
 	msg = msg.split()
 	if msg[0].upper() == 'REGISTER' and len(msg) == 3:
 		try:
