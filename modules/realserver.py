@@ -9,10 +9,11 @@ import socket
 import os
 import datetime
 
-TAM_MSG = 1024 # Tamanho do bloco de mensagem
-HOST = '0.0.0.0' # IP do Servidor
-PORT = 40000 # Porta que o Servidor escuta
-def processa_msg_client(msg, con, client):
+TAM_MSG = 1024 
+HOST = '0.0.0.0' 
+PORT = 40000 
+
+def process_msg_client(msg, con, client):
 	msg = msg.decode()
 	print('client', client, 'enviou', msg)
 	msg = msg.split()
