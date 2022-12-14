@@ -2,12 +2,9 @@
 import socket
 import sys
 
-host = sys.argv[1]
-port = int(sys.argv[2])
-
 TAM_MSG = 1024 
-HOST = host 
-PORT = port
+HOST = '127.0.0.1'
+PORT = 40000
 
 
 def decode_cmd_usr(cmd_usr):
@@ -27,9 +24,13 @@ def decode_cmd_usr(cmd_usr):
 	else:
 		return False
 		
-if len(sys.argv) > 1:
-	HOST = sys.argv[1] # If an IP is passed in the script call, the host receivs it.
-					   # Example: python client.py 192.168.0.5
+if len(sys.argv) == 2:
+	HOST = sys.argv[1]
+elif len(sys.argv) == 3:
+	PORT = int(sys.argv[2])
+else:
+	print('Invalid command. Please, restart the client.')
+	
 
 print('Servidor:', HOST+':'+str(PORT))
 
