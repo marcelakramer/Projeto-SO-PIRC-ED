@@ -2,9 +2,12 @@
 import socket
 import sys
 
+host = sys.argv[1]
+port = int(sys.argv[2])
+
 TAM_MSG = 1024 
-HOST = '127.0.0.1' 
-PORT = 40000 
+HOST = host 
+PORT = port
 
 
 def decode_cmd_usr(cmd_usr):
