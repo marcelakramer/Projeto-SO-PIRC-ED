@@ -28,9 +28,7 @@ if len(sys.argv) == 2:
 	HOST = sys.argv[1]
 elif len(sys.argv) == 3:
 	PORT = int(sys.argv[2])
-else:
-	print('Invalid command. Please, restart the client.')
-	
+
 
 print('Servidor:', HOST+':'+str(PORT))
 
