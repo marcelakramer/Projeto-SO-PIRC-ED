@@ -43,24 +43,27 @@ while True:
 	except KeyboardInterrupt:
 		print('\nDisconnecting...')
 		break
+	
+	if cmd_usr != '':
+		cmd = decode_cmd_usr(cmd_usr)
 
-	cmd = decode_cmd_usr(cmd_usr)
+		if not cmd:
+			print(f'\n-ERR \nInvalid command: {cmd_usr}\n')
 
-	if not cmd:
-		print(f'\n-ERR \nInvalid command: {cmd_usr}\n')
-
-	elif cmd.upper() == 'QUIT':
-		print('+OK\nDisconnecting...')
-		break
-
-	else:
-		sock.send(str.encode(cmd))
-		data = sock.recv(TAM_MSG)
-
-		if not data: 
+		elif cmd.upper() == 'QUIT':
+			print('+OK\nDisconnecting...')
 			break
 
-		data = data.decode()
-		print(f'\n{data}')
+		else:
+			sock.send(str.encode(cmd))
+			data = sock.recv(TAM_MSG)
+
+			if not data: 
+				break
+
+			data = data.decode()
+			print(f'\n{data}')
+	else:
+		print(f'\n-ERR \nInvalid command: {cmd_usr}\n')
 
 sock.close()
