@@ -25,7 +25,7 @@ def process_msg_client(msg, con, client):
 		except AlreadyExistingObjectException:
 			con.send(str.encode(f'-ERR\nUser already registered\n'))
 
-	elif msg[0].upper() == 'CHECK' and msg[1].isdigit() and len(msg) == 2:
+	elif msg[0].upper() == 'CHECK' and len(msg) == 2 and msg[1].isdigit():
 		try:
 			book_title = library.bookshelf.getBook(int(msg[1])).title
 			if library.check_available(int(msg[1])):
@@ -44,7 +44,7 @@ def process_msg_client(msg, con, client):
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
-	elif msg[0].upper() == 'LOAN' and msg[1].isdigit() and len(msg) == 4:
+	elif msg[0].upper() == 'LOAN' and len(msg) == 4 and msg[1].isdigit():
 		try:
 			loan = library.loan_book(int(msg[1]), msg[2], msg[3])
 			if loan[0]:
@@ -58,7 +58,7 @@ def process_msg_client(msg, con, client):
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
-	elif msg[0].upper() == 'INFO' and msg[1].isdigit() and len(msg) == 4:
+	elif msg[0].upper() == 'INFO' and len(msg) == 4 and msg[1].isdigit():
 		try:
 			loan_info = library.check_loan_info(int(msg[1]), msg[2], msg[3])
 			con.send(str.encode(f"+OK \nLoan information: {loan_info}"))
@@ -68,7 +68,7 @@ def process_msg_client(msg, con, client):
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
-	elif msg[0].upper() == 'RENEW' and msg[1].isdigit() and len(msg) == 4:
+	elif msg[0].upper() == 'RENEW' and len(msg) == 4 and msg[1].isdigit():
 		try:
 			if library.renew_loan(int(msg[1]), msg[2], msg[3]):
 				con.send(str.encode(f"+OK \nLoan Nº{msg[1]} was renewed succesfully by '{msg[2]}'.\n"))
@@ -80,7 +80,7 @@ def process_msg_client(msg, con, client):
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
-	elif msg[0].upper() == 'RETURN' and msg[1].isdigit() and len(msg) == 4:
+	elif msg[0].upper() == 'RETURN' and len(msg) == 4 and msg[1].isdigit():
 		try:
 			library.return_book(int(msg[1]), msg[2], msg[3])
 			con.send(str.encode(f"+OK \nLoan Nº{msg[1]} was returned succesfully by '{msg[2]}'.\n"))
