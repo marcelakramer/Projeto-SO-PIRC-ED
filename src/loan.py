@@ -36,16 +36,16 @@ class Loan:
     
 
     def __str__(self) -> str:
-        return f"""[ID: {self.__id} | Book: '{self.__book.title}' | Devolution Date: {self.__devolution} | Status: {self.__status}]\n       """
+        return f"""[ID: {self.__id} | Book: '{self.__book.title}' | Devolution Date: {self.__devolution} | Status: {self.__status}]\n"""
 
     
     def update_status(self) -> None:
         if self.__returned == None:
             delta = self.__devolution - self.__date
             if delta.days > 10:
-                self.__status == 'LATE'
-
+                self.__status = 'LATE'
             else:
-                self.__status == 'ON TIME'
+                self.__status = 'ON TIME'
         else:
+            self.__returned = True
             self.__status = 'RETURNED'

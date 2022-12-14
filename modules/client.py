@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 import socket
 import sys
-TAM_MSG = 1024 # Tamanho do bloco de mensagem
-HOST = '127.0.0.1' # IP do Servidor
-PORT = 40003 # Porta que o Servidor escuta
+
+TAM_MSG = 1024 
+HOST = '127.0.0.1' 
+PORT = 40000 
+
+
 def decode_cmd_usr(cmd_usr):
 	cmd_map = {
 		'register': 'register',  # [USERNAME] [PASSWORD] = register a new user
 		'check': 'check', # [BOOK ISBN] = check if a book is available for loan
+		'list': 'list', # [USERNAME] [PASSWORD] = check the user's loan list
 		'loan': 'loan', # [BOOK ISBN] [USERNAME] [PASSWORD] = loan a book
 		'info': 'info', # [LOAN ID] = check loan's info
 		'renew': 'renew', # [LOAN ID] [USERNAME] [PASSWORD] = renew a book loan
@@ -16,7 +20,6 @@ def decode_cmd_usr(cmd_usr):
 	}
 	tokens = cmd_usr.split()
 	if tokens[0].lower() in cmd_map:
-		#tokens[0] = cmd_map[tokens[0].lower()]
 		return " ".join(tokens)
 	else:
 		return False
@@ -26,88 +29,38 @@ if len(sys.argv) > 1:
 					   # Example: python client.py 192.168.0.5
 
 print('Servidor:', HOST+':'+str(PORT))
+
 serv = (HOST, PORT)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect(serv)
-print('Para encerrar use QUIT, CTRL+D ou CTRL+C\n')
+
+print('Para encerrar use QUIT ou CTRL+C\n')
+
 while True:
 	try:
-		cmd_usr = input('BTP> ')
-	except:
-		cmd_usr = 'QUIT'
+		cmd_usr = input('KES> ')
+
+	except KeyboardInterrupt:
+		print('\nDisconnecting...')
+		break
 
 	cmd = decode_cmd_usr(cmd_usr)
 
 	if not cmd:
-		print('Comando indefinido:', cmd_usr)
+		print('-ERROR \nInvalid command: ', cmd_usr)
+
+	elif cmd.upper() == 'QUIT':
+		print('+OK\nDisconnecting...')
+		break
 
 	else:
 		sock.send(str.encode(cmd))
-
 		data = sock.recv(TAM_MSG)
 
-		if not data: break
-
-		msg_status = data.decode().split('\n')[0]
-		data = data.decode()
-		# data = data[len(msg_status)+1:]
-		print(f'data 1: {data}')
-		print(msg_status)
-		cmd = cmd.split()
-		cmd[0] = cmd[0].upper()
-
-		if cmd[0] == 'QUIT':
+		if not data: 
 			break
 
-		elif cmd[0] == 'REGISTER':
-			# 
-			print(f'data 2: {data}')
-			# while True:
-			# 	arquivos = data.split('\n')
-			# 	residual = arquivos[-1] # último sem \n fica para próxima
-			# 	for arq in arquivos[:-1]:
-			# 		print(arq)
-			# 		num_arquivos -= 1
-			# 	if num_arquivos == 0: break
-			# data = sock.recv(TAM_MSG)
-			#print(f'data 3: {data}')
-			if not data: break
-
-			
-			
-			# data = residual + data.decode()
-
-		elif cmd[0] == 'CHECK':
-			print(f'data 2: {data}')
-
-
-			if not data: break
-
-
-		elif cmd[0] == 'LOAN':
-			print(f'data 2: {data}')
-
-
-			if not data: break
-
-		elif cmd[0] == 'INFO':
-			print(f'data 2: {data}')
-
-
-			if not data: break
-
-
-		elif cmd[0] == 'RENEW':
-			print(f'data 2: {data}')
-
-
-			if not data: break
-
-		elif cmd[0] == 'RETURN':
-			print(f'data 2: {data}')
-
-
-			if not data: break
-
+		data = data.decode()
+		print(f'\n{data}')
 
 sock.close()

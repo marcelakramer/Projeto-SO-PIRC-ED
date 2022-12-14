@@ -11,8 +11,6 @@ from structures.bookshelf import AVLBookshelf
 from structures.linkedlist import LinkedList
 from structures.exceptions import LoginFailException, AbsentObjectException, UnavailableObjectException
 
-
-
 class Library:
     def __init__(self) -> None:
         self.__loans = LinkedList()
@@ -72,7 +70,7 @@ class Library:
         book.update_status()
 
         newLoan = Loan(self.__autoinc, book)
-        self.__autoinc += 1 # check autoincrement
+        self.__autoinc += 1 
     
         self.loans.insert(newLoan)
         user.loans.insert(newLoan)
@@ -96,8 +94,9 @@ class Library:
         if not self.login(username, password):
             raise LoginFailException
 
-        # falta achar um jeito de colocar o loan.update aqui
         user = self.__users.get(username)
+        for i in range(1, user.loans.length):
+            user.loans.get(i).update_status()
         return str(user.loans)
 
     

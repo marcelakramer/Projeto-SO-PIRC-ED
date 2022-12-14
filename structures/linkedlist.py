@@ -19,6 +19,11 @@ class LinkedList:
         self.__length = 0
 
     
+    @property
+    def length(self) -> int:
+        return self.__length
+
+    
     def __str__(self) -> str:
         s = ''
         cursor = self.__start
