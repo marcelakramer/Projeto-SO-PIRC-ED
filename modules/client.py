@@ -47,7 +47,7 @@ while True:
 	cmd = decode_cmd_usr(cmd_usr)
 
 	if not cmd:
-		print('-ERROR \nInvalid command: ', cmd_usr)
+		print(f'\n-ERR \nInvalid command: {cmd_usr}\n')
 
 	elif cmd.upper() == 'QUIT':
 		print('+OK\nDisconnecting...')
