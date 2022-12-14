@@ -102,7 +102,7 @@ def process_client(con, client):
 	print('Connected client: ', client)
 	while True:
 		msg = con.recv(TAM_MSG)
-		if not msg or not processa_msg_client(msg, con, client):
+		if not msg or not process_msg_client(msg, con, client):
 			break
 	con.close()
 	print('Disconnected client: ', client)
