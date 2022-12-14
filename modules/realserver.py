@@ -22,7 +22,7 @@ def processa_msg_client(msg, con, client):
 			con.send(str.encode(f"+OK \nUser '{msg[1]}' registered successfully.\n"))
    
 		except AlreadyExistingObjectException:
-			con.send(str.encode(f'-ERROR\nUser already registered\n'))
+			con.send(str.encode(f'-ERR\nUser already registered\n'))
 
 	elif msg[0].upper() == 'CHECK' and len(msg) == 2:
 		try:
@@ -30,10 +30,10 @@ def processa_msg_client(msg, con, client):
 			if library.check_available(int(msg[1])):
 				con.send(str.encode(f"+OK \n'The book {book_title}' is available for loan.\n"))
 			else:
-				con.send(str.encode(f"-ERROR \nThe book '{book_title}' is unavailable for loan.\n"))
+				con.send(str.encode(f"-ERR \nThe book '{book_title}' is unavailable for loan.\n"))
 
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERROR \nThe book is not registered.\n"))
+			con.send(str.encode(f"-ERR \nThe book is not registered.\n"))
 
 	elif msg[0].upper() == 'LIST' and len(msg) == 3:
 		try:
@@ -51,9 +51,9 @@ def processa_msg_client(msg, con, client):
 				con.send(str.encode(f"+OK \nLoan Nº{loan[1]} of book '{book_title}' made successfully by '{msg[2]}'.\n"))
 		
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERROR \nThe book is not registered.\n"))
+			con.send(str.encode(f"-ERR \nThe book is not registered.\n"))
 		except UnavailableObjectException:
-			con.send(str.encode(f"-ERROR \nThe book is unavailable for loan.\n"))
+			con.send(str.encode(f"-ERR \nThe book is unavailable for loan.\n"))
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
@@ -63,7 +63,7 @@ def processa_msg_client(msg, con, client):
 			con.send(str.encode(f"+OK \nLoan information: {loan_info}"))
    
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERROR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
+			con.send(str.encode(f"-ERR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
@@ -73,7 +73,7 @@ def processa_msg_client(msg, con, client):
 				con.send(str.encode(f"+OK \nLoan Nº{msg[1]} was renewed succesfully by '{msg[2]}'.\n"))
    
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERROR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
+			con.send(str.encode(f"-ERR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
 		except UnavailableObjectException:
 			con.send(str.encode(f"+OK \nLoan Nº{msg[1]} is already late.\n"))
 		except LoginFailException as lfe:
@@ -85,7 +85,7 @@ def processa_msg_client(msg, con, client):
 			con.send(str.encode(f"+OK \nLoan Nº{msg[1]} was returned succesfully by '{msg[2]}'.\n"))
    
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERROR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
+			con.send(str.encode(f"-ERR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
@@ -94,7 +94,7 @@ def processa_msg_client(msg, con, client):
 		return False
 
 	else:
-		con.send(str.encode(f'-ERROR \nInvalid command: {msg}'))
+		con.send(str.encode(f'-ERR \nInvalid command: {msg}'))
 	return True
 	
 def process_client(con, client):
