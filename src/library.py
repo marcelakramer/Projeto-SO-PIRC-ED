@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 import sys
 sys.path.append('./..')
@@ -114,8 +114,9 @@ class Library:
         if loan.status == 'LATE':
                 raise UnavailableObjectException
         else:
-            loan.devolution += timedelta(days = 10)
-            self.loans.get(loan_id).devolution += timedelta(days = 10)
+            loan.renewal = date.today()
+            loan.devolution = loan.renewal + timedelta(days = 10)
+
             return True
 
         

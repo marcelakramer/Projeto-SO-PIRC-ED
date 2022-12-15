@@ -50,7 +50,7 @@ while True:
 		cmd = decode_cmd_usr(cmd_usr)
 
 		if not cmd:
-			print(f'\n-ERR \nInvalid command: {cmd_usr}\n')
+			print(f'\n-ERR \n\nInvalid command: {cmd_usr}\n')
 
 		elif cmd.upper() == 'QUIT':
 			print('+OK\nDisconnecting...')
@@ -65,7 +65,44 @@ while True:
 
 			data = data.decode()
 			print(f'\n{data}')
+			
+			data = data.split(' ')
+			if data[1] == '20':
+				print('Operation performed successfully.\n')
+			elif data[1] == '21':
+				print('User registered successfully.\n')
+			elif data[1] == '22':
+				print('User logged in successfully.\n')
+			elif data[1] == '23':
+				print('Book available for loan.\n')
+			elif data[1] == '24':
+				print('Loan done successfully.\n')
+			elif data[1] == '25':
+				print('Loan info accessed successfully.\n')
+			elif data[1] == '26':
+				print('Loan list accessed successfully.\n')
+			elif data[1] == '27':
+				print('Loan renewed successfully.\n')
+			elif data[1] == '28':
+				print('Loan returned successfully.\n')
+			elif data[1] == '29':
+				print('Client disconnect request received successfully.\n')
+			elif data[1] == '40':
+				print('Invalid command.\n')
+			elif data[1] == '41':
+				print('User already registered.\n')
+			elif data[1] == '42':
+				print('Username and/or the password incorrect.\n')
+			elif data[1] == '43':
+				print('Book not registered.\n')
+			elif data[1] == '44':
+				print('Book unavailable for loan.\n')
+			elif data[1] == '45':
+				print('Unexistent loan for this user.\n')
+			elif data[1] == '46':
+				print('Loan already late.\n')
+
 	else:
-		print(f'\n-ERR \nInvalid command: {cmd_usr}\n')
+		print(f'\n-ERR 40 {cmd_usr}\n\nInvalid command.\n')
 
 sock.close()

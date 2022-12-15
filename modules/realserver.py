@@ -7,11 +7,14 @@ from structures.exceptions import *
 
 import socket
 import os
-import datetime
+import threading
+import time
 
 TAM_MSG = 1024 
 HOST = '0.0.0.0' 
 PORT = 40000 
+
+mutex = threading.Semaphore(1)
 
 def process_msg_client(msg, con, client):
 	msg = msg.decode()
@@ -20,83 +23,88 @@ def process_msg_client(msg, con, client):
 	if msg[0].upper() == 'REGISTER' and len(msg) == 3:
 		try:
 			library.register_user(msg[1],msg[2])
-			con.send(str.encode(f"+OK \nUser '{msg[1]}' registered successfully.\n"))
+			con.send(str.encode(f"+OK 21 {msg[1]}\n"))
    
 		except AlreadyExistingObjectException:
-			con.send(str.encode(f'-ERR\nUser already registered\n'))
+			con.send(str.encode(f'-ERR 41 \n'))
 
 	elif msg[0].upper() == 'CHECK' and len(msg) == 2 and msg[1].isdigit():
 		try:
 			book_title = library.bookshelf.getBook(int(msg[1])).title
 			if library.check_available(int(msg[1])):
-				con.send(str.encode(f"+OK \n'The book {book_title}' is available for loan.\n"))
+				con.send(str.encode(f"+OK 23 {book_title} \n"))
 			else:
-				con.send(str.encode(f"-ERR \nThe book '{book_title}' is unavailable for loan.\n"))
+				con.send(str.encode(f"-ERR 44 \n"))
 
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR \nThe book is not registered.\n"))
+			con.send(str.encode(f"-ERR 43 \n"))
 
 	elif msg[0].upper() == 'LIST' and len(msg) == 3:
 		try:
 			loanlist = library.check_loan_list(msg[1], msg[2])
-			con.send(str.encode(f"+OK \nUser '{msg[1]}' loan list: \n{loanlist}"))
+			con.send(str.encode(f"+OK 26 {msg[1]} \n{loanlist}"))
 
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
 	elif msg[0].upper() == 'LOAN' and len(msg) == 4 and msg[1].isdigit():
+		mutex.acquire()
+
 		try:
 			loan = library.loan_book(int(msg[1]), msg[2], msg[3])
+			time.sleep(5)
 			if loan[0]:
 				book_title = library.bookshelf.getBook(int(msg[1])).title
-				con.send(str.encode(f"+OK \nLoan Nº{loan[1]} of book '{book_title}' made successfully by '{msg[2]}'.\n"))
+				con.send(str.encode(f"+OK 24 {loan[1]} {book_title}\n"))
 		
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR \nThe book is not registered.\n"))
+			con.send(str.encode(f"-ERR 43 \n"))
 		except UnavailableObjectException:
-			con.send(str.encode(f"-ERR \nThe book is unavailable for loan.\n"))
+			con.send(str.encode(f"-ERR 44 \n"))
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
+
+		mutex.release()
 
 	elif msg[0].upper() == 'INFO' and len(msg) == 4 and msg[1].isdigit():
 		try:
 			loan_info = library.check_loan_info(int(msg[1]), msg[2], msg[3])
-			con.send(str.encode(f"+OK \nLoan information: {loan_info}"))
+			con.send(str.encode(f"+OK 25 \n{loan_info}"))
    
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
+			con.send(str.encode(f"-ERR 45 \n"))
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
 	elif msg[0].upper() == 'RENEW' and len(msg) == 4 and msg[1].isdigit():
 		try:
 			if library.renew_loan(int(msg[1]), msg[2], msg[3]):
-				con.send(str.encode(f"+OK \nLoan Nº{msg[1]} was renewed succesfully by '{msg[2]}'.\n"))
+				con.send(str.encode(f"+OK 27 {msg[1]}\n"))
    
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
+			con.send(str.encode(f"-ERR 45 \n"))
 		except UnavailableObjectException:
-			con.send(str.encode(f"+OK \nLoan Nº{msg[1]} is already late.\n"))
+			con.send(str.encode(f"-ERR 46 \n"))
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
 	elif msg[0].upper() == 'RETURN' and len(msg) == 4 and msg[1].isdigit():
 		try:
 			library.return_book(int(msg[1]), msg[2], msg[3])
-			con.send(str.encode(f"+OK \nLoan Nº{msg[1]} was returned succesfully by '{msg[2]}'.\n"))
+			con.send(str.encode(f"+OK 28 {msg[1]}\n"))
    
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR \nUser '{msg[2]}' has no loan Nº {msg[1]}.\n"))
+			con.send(str.encode(f"-ERR 45 \n"))
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
 	elif msg[0].upper() == 'QUIT' and len(msg) == 1:
-		con.send(str.encode('+OK \nDisconnecting...\n'))
+		con.send(str.encode('+OK 29 \n'))
 		return False
 
 	else:
 		msg = (' ').join(msg)
-		con.send(str.encode(f'-ERROR \nInvalid command: {msg}\n'))
+		con.send(str.encode(f'-ERR 40 {msg}\n'))
 	return True
 	
 def process_client(con, client):
@@ -125,11 +133,16 @@ while True:
 		con, client = sock.accept()
 	except:
 		break
-	pid = os.fork()
+
+	threading.Thread(target=process_client, args=(con, client)).start()
+
+	# acredito que essa parte da implementação esteja errada, mas funciona	
+
+	""" pid = os.fork()
 	if pid == 0:
 		sock.close()
 		process_client(con, client)
 		break
 	else:
-		con.close()
+		con.close() """
 sock.close()
