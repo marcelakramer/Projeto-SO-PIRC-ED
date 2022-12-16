@@ -180,17 +180,19 @@ class AVLBookshelf(object):
   
 
     def InOrder(self):
-        print('''                             BOOKS\n''')
-        self.__InOrder(self.__root)
+        string = ''
+        return self.__InOrder(self.__root)
 
 
     def __InOrder(self, root: Node): 
         if not root: 
-            return
-  
-        self.__InOrder(root.left)
-        print(f'{root.book}', end="\n")  
-        self.__InOrder(root.right) 
+            return ''
+
+        if root is not None:
+            left = self.__InOrder(root.left)
+            right = self.__InOrder(root.right)
+
+            return left + ' ' + str(root.book) + ' ' + right
 
 
     def delete(self, book:object):
