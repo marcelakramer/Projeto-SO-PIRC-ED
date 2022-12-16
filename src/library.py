@@ -1,11 +1,14 @@
 from datetime import date, timedelta
 
+
 import sys
 sys.path.append('./..')
 
 from src.user import User
 from src.loan import Loan
 from src.book import Book
+
+
 
 from structures.bookshelf import AVLBookshelf
 from structures.linkedlist import LinkedList
@@ -137,3 +140,5 @@ class Library:
         
 
         
+    def bookList(self):
+        return self.__bookshelf.InOrder()
