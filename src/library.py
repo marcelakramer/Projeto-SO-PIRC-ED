@@ -1,5 +1,10 @@
 from datetime import date, timedelta
 
+import threading
+import time
+
+
+mutex = threading.Semaphore(1)
 
 import sys
 sys.path.append('./..')
@@ -70,6 +75,9 @@ class Library:
         user = self.__users.get(username)
 
         book = self.__bookshelf.getBook(book_isbn)
+
+        mutex.acquire()
+
         book.update_status()
 
         newLoan = Loan(self.__autoinc, book)
@@ -77,6 +85,9 @@ class Library:
     
         self.loans.insert(newLoan)
         user.loans.insert(newLoan)
+
+        mutex.release()
+
         return True, newLoan.id
 
     def check_loan_info(self, loan_id: int, username: str, password: str) -> str:
@@ -139,6 +150,10 @@ class Library:
         user.loans.remove(loan_id)
         
 
-        
     def bookList(self):
         return self.__bookshelf.InOrder()
+
+
+    def delete_book(self, book_isbn: int) -> None:
+        newBook = Book(book_isbn, book_title)
+        self.__bookshelf.insert(newBook)
