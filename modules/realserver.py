@@ -12,7 +12,7 @@ import time
 
 TAM_MSG = 1024 
 HOST = '0.0.0.0' 
-PORT = 40000 
+PORT = 40000
 
 mutex = threading.Semaphore(1)
 
@@ -48,11 +48,9 @@ def process_msg_client(msg, con, client):
 			con.send(str.encode(f"{lfe}\n"))
 
 	elif msg[0].upper() == 'LOAN' and len(msg) == 4 and msg[1].isdigit():
-		mutex.acquire()
 
 		try:
 			loan = library.loan_book(int(msg[1]), msg[2], msg[3])
-			time.sleep(5)
 			if loan[0]:
 				book_title = library.bookshelf.getBook(int(msg[1])).title
 				con.send(str.encode(f"+OK 24 {loan[1]} {book_title}\n"))
@@ -64,7 +62,6 @@ def process_msg_client(msg, con, client):
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
-		mutex.release()
 
 	elif msg[0].upper() == 'INFO' and len(msg) == 4 and msg[1].isdigit():
 		try:
