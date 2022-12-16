@@ -10,6 +10,7 @@ PORT = 40000
 def decode_cmd_usr(cmd_usr):
 	cmd_map = {
 		'register': 'register',  # [USERNAME] [PASSWORD] = register a new user
+		#'login': 'login', # [LOGIN] [USERNAME] [PASSWORD] = log in a registered user
 		'check': 'check', # [BOOK ISBN] = check if a book is available for loan
 		'list': 'list', # [USERNAME] [PASSWORD] = check the user's loan list
 		'loan': 'loan', # [BOOK ISBN] [USERNAME] [PASSWORD] = loan a book
@@ -21,8 +22,9 @@ def decode_cmd_usr(cmd_usr):
 	tokens = cmd_usr.split()
 	if tokens[0].lower() in cmd_map:
 		return " ".join(tokens)
-	else:
-		return False
+	
+	return cmd_usr
+
 		
 if len(sys.argv) == 2:
 	HOST = sys.argv[1]
@@ -49,10 +51,7 @@ while True:
 	if cmd_usr != '':
 		cmd = decode_cmd_usr(cmd_usr)
 
-		if not cmd:
-			print(f'\n-ERR \n\nInvalid command: {cmd_usr}\n')
-
-		elif cmd.upper() == 'QUIT':
+		if cmd.upper() == 'QUIT':
 			print('+OK\nDisconnecting...')
 			break
 
