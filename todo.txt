@@ -1,3 +1,2 @@
-implementar o metodo list_books
-verificar a implementação do semaforos e threads
-implementar threads e semaforos
+implementar o metodo list_books no servidor
+ 
