@@ -73,8 +73,9 @@ while True:
 					LOGGED = True
 					""" username = cmd_usr[1]
 					password = cmd_usr[2]
-					USERNAME = data[cmd.split()[1]]
-					PASSWORD = data[cmd.split()[2]] """
+					"""
+					USERNAME = cmd_usr.split()[1]
+					PASSWORD = cmd_usr.split()[2]
 					print('User registered successfully.\n')
 				elif data[1] == '22':
 					USERNAME = cmd_usr.split()[1]
