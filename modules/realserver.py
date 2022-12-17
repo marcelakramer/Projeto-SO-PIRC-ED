@@ -12,7 +12,8 @@ import time
 
 TAM_MSG = 1024 
 HOST = '0.0.0.0' 
-PORT = 40000 
+PORT = 40000
+
 
 mutex = threading.Semaphore(1)
 
@@ -28,12 +29,14 @@ def process_msg_client(msg, con, client):
 		except AlreadyExistingObjectException:
 			con.send(str.encode(f'-ERR 41 \n'))
 
-	if msg[0].upper() == 'LOGIN' and len(msg) == 3:
+	elif msg[0].upper() == 'LOGIN' and len(msg) == 3:
 		try:
-			library.login(msg[1],msg[2])
-			con.send(str.encode(f"+OK 22 {msg[1]}\n"))
+			if library.login(msg[1],msg[2]):
+				con.send(str.encode(f"+OK 22 {msg[1]}\n"))
+			else:
+				con.send(str.encode(f'-ERR 42 \n'))
    
-		except LoginFailException:
+		except AbsentObjectException:
 			con.send(str.encode(f'-ERR 42 \n'))
 
 	elif msg[0].upper() == 'CHECK' and len(msg) == 2 and msg[1].isdigit():
@@ -60,7 +63,7 @@ def process_msg_client(msg, con, client):
 
 		try:
 			loan = library.loan_book(int(msg[1]), msg[2], msg[3])
-			time.sleep(5)
+			
 			if loan[0]:
 				book_title = library.bookshelf.getBook(int(msg[1])).title
 				con.send(str.encode(f"+OK 24 {loan[1]} {book_title}\n"))
@@ -135,7 +138,7 @@ library.register_book(20, 'O Pequeno Príncipe')
 library.register_book(30, 'Dom Quixote')
 library.register_book(40, 'Hamlet')
 library.register_book(50, 'Os Miseráveis')
-
+print(library.users)
 while True:
 	try:
 		con, client = sock.accept()

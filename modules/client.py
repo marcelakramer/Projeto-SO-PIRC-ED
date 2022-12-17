@@ -6,7 +6,8 @@ TAM_MSG = 1024
 HOST = '127.0.0.1'
 PORT = 40000
 LOGGED = False
-
+USERNAME = ''
+PASSWORD = ''
 
 def decode_cmd_usr(cmd_usr):
 	cmd_map = {
@@ -43,7 +44,7 @@ print('Para encerrar use QUIT ou CTRL+C\n')
 while True:
 	try:
 		cmd_usr = input('KES> ')
-
+		print(cmd_usr.split(' '))
 	except KeyboardInterrupt:
 		print('\nDisconnecting...')
 		break
@@ -71,20 +72,32 @@ while True:
 				data = data.split(' ')
 				if data[1] == '21':
 					LOGGED = True
+					""" username = cmd_usr[1]
+					password = cmd_usr[2]
+					USERNAME = data[cmd.split()[1]]
+					PASSWORD = data[cmd.split()[2]] """
 					print('User registered successfully.\n')
 				elif data[1] == '22':
+					USERNAME = cmd_usr.split()[1]
+					PASSWORD = cmd_usr.split()[2]
 					LOGGED = True
 					print('User logged in successfully.\n')
+				elif data[1] == '40':
+					print('Invalid command.\n')
 				elif data[1] == '41':
 					print('User already registered.\n')
 				elif data[1] == '42':
-					print('Username and/or the password incorrect.\n')
+					print('Username and/or password incorrect.\n')
 			else:
-				print(f'\n To use this command you need to be logged in\n')
-		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'REGISTER' or cmd_usr.split(' ')[0].upper() == 'LOGIN'):
-			print('\nJá ta registrado ou logado\n')
+				print(f'\n You need to be logged in to use this command.\n')
+		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'LOGIN'):
+			print('\nUser already logged in.\n')
+
+		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'REGISTER'):
+			print('\nSession already initialized.\n')
 				
 		else:
+			cmd += ' ' + USERNAME + ' ' + PASSWORD
 			sock.send(str.encode(cmd))
 			data = sock.recv(TAM_MSG)
 

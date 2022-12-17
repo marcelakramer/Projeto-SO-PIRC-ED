@@ -57,7 +57,7 @@ class LinkedList:
                 return cursor.content
             cursor = cursor.next
         
-        return AbsentObjectException
+        raise AbsentObjectException
             
 
     def insert(self, content: object) -> None:
