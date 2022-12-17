@@ -5,7 +5,9 @@ import sys
 TAM_MSG = 1024 
 HOST = '127.0.0.1'
 PORT = 40000
-
+LOGGED = False
+USERNAME = ''
+PASSWORD = ''
 
 def decode_cmd_usr(cmd_usr):
 	cmd_map = {
@@ -18,6 +20,7 @@ def decode_cmd_usr(cmd_usr):
 		'renew': 'renew', # [LOAN ID] [USERNAME] [PASSWORD] = renew a book loan
 		'return': 'return', # [LOAN ID] = return a book
 		'quit': 'quit', # quit the connection
+		'login': 'login'
 	}
 	tokens = cmd_usr.split()
 	if tokens[0].lower() in cmd_map:
@@ -43,7 +46,7 @@ print('Para encerrar use QUIT ou CTRL+C\n')
 while True:
 	try:
 		cmd_usr = input('KES> ')
-
+		print(cmd_usr.split(' '))
 	except KeyboardInterrupt:
 		print('\nDisconnecting...')
 		break
@@ -54,8 +57,46 @@ while True:
 		if cmd.upper() == 'QUIT':
 			print('+OK\nDisconnecting...')
 			break
+		elif not LOGGED:
+			if (cmd_usr.split(' ')[0].upper() == 'REGISTER' or cmd_usr.split(' ')[0].upper() == 'LOGIN'):
+				sock.send(str.encode(cmd))
+				data = sock.recv(TAM_MSG)
 
+				if not data: 
+					break
+
+				data = data.decode()
+				print(f'\n{data}')
+
+				data = data.split(' ')
+				if data[1] == '21':
+					LOGGED = True
+					""" username = cmd_usr[1]
+					password = cmd_usr[2]
+					USERNAME = data[cmd.split()[1]]
+					PASSWORD = data[cmd.split()[2]] """
+					print('User registered successfully.\n')
+				elif data[1] == '22':
+					USERNAME = cmd_usr.split()[1]
+					PASSWORD = cmd_usr.split()[2]
+					LOGGED = True
+					print('User logged in successfully.\n')
+				elif data[1] == '40':
+					print('Invalid command.\n')
+				elif data[1] == '41':
+					print('User already registered.\n')
+				elif data[1] == '42':
+					print('Username and/or password incorrect.\n')
+			else:
+				print(f'\n You need to be logged in to use this command.\n')
+		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'LOGIN'):
+			print('\nUser already logged in.\n')
+
+		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'REGISTER'):
+			print('\nSession already initialized.\n')
+				
 		else:
+			cmd += ' ' + USERNAME + ' ' + PASSWORD
 			sock.send(str.encode(cmd))
 			data = sock.recv(TAM_MSG)
 
@@ -68,10 +109,7 @@ while True:
 			data = data.split(' ')
 			if data[1] == '20':
 				print('Operation performed successfully.\n')
-			elif data[1] == '21':
-				print('User registered successfully.\n')
-			elif data[1] == '22':
-				print('User logged in successfully.\n')
+			
 			elif data[1] == '23':
 				print('Book available for loan.\n')
 			elif data[1] == '24':
@@ -88,10 +126,6 @@ while True:
 				print('Client disconnect request received successfully.\n')
 			elif data[1] == '40':
 				print('Invalid command.\n')
-			elif data[1] == '41':
-				print('User already registered.\n')
-			elif data[1] == '42':
-				print('Username and/or the password incorrect.\n')
 			elif data[1] == '43':
 				print('Book not registered.\n')
 			elif data[1] == '44':
