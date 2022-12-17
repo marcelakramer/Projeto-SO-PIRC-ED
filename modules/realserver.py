@@ -28,6 +28,14 @@ def process_msg_client(msg, con, client):
 		except AlreadyExistingObjectException:
 			con.send(str.encode(f'-ERR 41 \n'))
 
+	if msg[0].upper() == 'LOGIN' and len(msg) == 3:
+		try:
+			library.login(msg[1],msg[2])
+			con.send(str.encode(f"+OK 22 {msg[1]}\n"))
+   
+		except LoginFailException:
+			con.send(str.encode(f'-ERR 42 \n'))
+
 	elif msg[0].upper() == 'CHECK' and len(msg) == 2 and msg[1].isdigit():
 		try:
 			book_title = library.bookshelf.getBook(int(msg[1])).title

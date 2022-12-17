@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+import csv
 import sys
 sys.path.append('./..')
 
@@ -15,6 +16,7 @@ class Library:
     def __init__(self) -> None:
         self.__loans = LinkedList()
         self.__users = LinkedList()
+        self.__load_users()
         self.__bookshelf = AVLBookshelf()
         self.__autoinc = 1
 
@@ -35,6 +37,11 @@ class Library:
     def register_user(self, username: str, password: str) -> None:
         newUser = User(username, password)
         self.__users.insert(newUser)
+        with open('registered_users.csv', 'a+', newline='', encoding='utf8') as user_list:
+            writer = csv.writer(user_list)
+            print(user_list)
+            writer.writerow([username,password])
+
 
     
     def login(self, username: str, password: str) -> bool:
@@ -134,6 +141,16 @@ class Library:
         book = loan.book
         book.update_status()
         user.loans.remove(loan_id)
+    
+    def __load_users (self):
+        with open('registered_users.csv', encoding='utf8') as registered_users:
+            user_list = csv.reader(registered_users,delimiter=',')
+            print(user_list)
+            for user in user_list:
+                print(user)
+                new_user = User(user[0],user[1])
+                self.__users.insert(new_user)
+        
         
 
         

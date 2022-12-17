@@ -5,6 +5,7 @@ import sys
 TAM_MSG = 1024 
 HOST = '127.0.0.1'
 PORT = 40000
+LOGGED = False
 
 
 def decode_cmd_usr(cmd_usr):
@@ -17,6 +18,7 @@ def decode_cmd_usr(cmd_usr):
 		'renew': 'renew', # [LOAN ID] [USERNAME] [PASSWORD] = renew a book loan
 		'return': 'return', # [LOAN ID] = return a book
 		'quit': 'quit', # quit the connection
+		'login': 'login'
 	}
 	tokens = cmd_usr.split()
 	if tokens[0].lower() in cmd_map:
@@ -55,7 +57,33 @@ while True:
 		elif cmd.upper() == 'QUIT':
 			print('+OK\nDisconnecting...')
 			break
+		elif not LOGGED:
+			if (cmd_usr.split(' ')[0].upper() == 'REGISTER' or cmd_usr.split(' ')[0].upper() == 'LOGIN'):
+				sock.send(str.encode(cmd))
+				data = sock.recv(TAM_MSG)
 
+				if not data: 
+					break
+
+				data = data.decode()
+				print(f'\n{data}')
+
+				data = data.split(' ')
+				if data[1] == '21':
+					LOGGED = True
+					print('User registered successfully.\n')
+				elif data[1] == '22':
+					LOGGED = True
+					print('User logged in successfully.\n')
+				elif data[1] == '41':
+					print('User already registered.\n')
+				elif data[1] == '42':
+					print('Username and/or the password incorrect.\n')
+			else:
+				print(f'\n To use this command you need to be logged in\n')
+		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'REGISTER' or cmd_usr.split(' ')[0].upper() == 'LOGIN'):
+			print('\nJá ta registrado ou logado\n')
+				
 		else:
 			sock.send(str.encode(cmd))
 			data = sock.recv(TAM_MSG)
@@ -69,10 +97,7 @@ while True:
 			data = data.split(' ')
 			if data[1] == '20':
 				print('Operation performed successfully.\n')
-			elif data[1] == '21':
-				print('User registered successfully.\n')
-			elif data[1] == '22':
-				print('User logged in successfully.\n')
+			
 			elif data[1] == '23':
 				print('Book available for loan.\n')
 			elif data[1] == '24':
@@ -89,10 +114,6 @@ while True:
 				print('Client disconnect request received successfully.\n')
 			elif data[1] == '40':
 				print('Invalid command.\n')
-			elif data[1] == '41':
-				print('User already registered.\n')
-			elif data[1] == '42':
-				print('Username and/or the password incorrect.\n')
 			elif data[1] == '43':
 				print('Book not registered.\n')
 			elif data[1] == '44':
