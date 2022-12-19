@@ -12,7 +12,7 @@ import time
 
 TAM_MSG = 1024 
 HOST = '0.0.0.0' 
-PORT = 40000
+PORT = 40001
 
 mutex = threading.Semaphore(1)
 
@@ -134,6 +134,7 @@ library.register_book(20, 'O Pequeno Príncipe')
 library.register_book(30, 'Dom Quixote')
 library.register_book(40, 'Hamlet')
 library.register_book(50, 'Os Miseráveis')
+library.load_lib_loans()
 print(library.users)
 while True:
 	try:

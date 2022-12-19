@@ -29,9 +29,10 @@ class Library:
     def __init__(self) -> None:
         self.__loans = LinkedList() # list of all the loans already made 
         self.__users = LinkedList() # list of all the users registered
-        self.__load_users()
         self.__bookshelf = AVLBookshelf() # AVL Tree of all the books
         self.__autoinc = 1 # used for loan ID purposes
+        self.__load_users()
+        # self.__load_lib_loans()
 
 
     @property
@@ -142,12 +143,15 @@ class Library:
 
         book.update_status() # updates the book status for 'False"
 
-        newLoan = Loan(self.__autoinc, book) # creates a new loan instance for the book
+        newLoan = Loan(self.__autoinc, book, username) # creates a new loan instance for the book
         self.__autoinc += 1  
     
         self.loans.insert(newLoan) # inserts the loan on the library loan list
         user.loans.insert(newLoan) # inserts the loan on the user loan list
-
+        with open('library_loans.csv', 'a+', newline='', encoding='utf8') as lib_loans:
+            writer = csv.writer(lib_loans)
+            print(lib_loans)
+            writer.writerow([newLoan.id, book_isbn, newLoan.date, newLoan.renewal,newLoan.devolution,newLoan.returned,newLoan.status, newLoan.username])
         mutex_loan.release() # 'down' on the semaphore
 
         return True, newLoan.id # returns the loan ID
@@ -243,7 +247,25 @@ class Library:
                 print(user)
                 new_user = User(user[0],user[1])
                 self.__users.insert(new_user)
-        
+
+    def load_lib_loans(self):
+        with open('library_loans.csv', encoding='utf8') as lib_loans:
+            loans = csv.reader(lib_loans,delimiter=',')
+            for loan in loans:
+                user = self.__users.get(loan[-1])
+                book = self.__bookshelf.getBook(int(loan[1]))
+                mutex_loan.acquire()
+                book.update_status()
+                newLoan = Loan(int(loan[0]),book,loan[-1])
+                newLoan.date = date.fromisoformat(loan[2])
+                newLoan.renewal = date.fromisoformat(loan[3])
+                newLoan.devolution = date.fromisoformat(loan[4])
+                self.__autoinc = int(loan[0]) + 1
+                self.loans.insert(newLoan)
+                user.loans.insert(newLoan)
+                mutex_loan.release()
+            
+
 
     def bookList(self) -> str:
         '''

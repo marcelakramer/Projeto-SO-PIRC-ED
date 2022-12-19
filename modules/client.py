@@ -4,7 +4,7 @@ import sys
 
 TAM_MSG = 1024 
 HOST = '127.0.0.1'
-PORT = 40000
+PORT = 40001
 LOGGED = False
 USERNAME = ''
 PASSWORD = ''

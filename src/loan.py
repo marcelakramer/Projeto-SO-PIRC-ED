@@ -3,7 +3,7 @@ from datetime import date, timedelta
 
 # Class Loan
 class Loan:
-    def __init__(self, id: int, book: object) -> None:
+    def __init__(self, id: int, book: object, username: str) -> None:
         '''
         Method that initializes the loan instance with its attributes
         
@@ -15,6 +15,7 @@ class Loan:
         self.__devolution = self.__date + timedelta(days = 10) # sets the devolution date to 10 days after the current date
         self.__returned = None
         self.__status = 'ON TIME'
+        self.__username = username
 
     
     @property
@@ -56,7 +57,38 @@ class Loan:
         
         '''
         return self.__status
+    
+    @property
+    def date(self) -> str:
+        '''
+        Method to access the status private attribute
+        
+        '''
+        return self.__date
 
+    @property
+    def returned(self) -> str:
+        '''
+        Method to access the status private attribute
+        
+        '''
+        return self.__returned
+    
+    @property
+    def username(self) -> str:
+        '''
+        Method to access the status private attribute
+        
+        '''
+        return self.__username
+
+    @date.setter
+    def date(self, date: date) -> None:
+        '''
+        Method to change the renewal private attribute
+        
+        '''
+        self.__date = date
 
     @renewal.setter
     def renewal(self, new_renewal: date) -> None:
@@ -92,7 +124,7 @@ class Loan:
         Returns this string
 
         '''
-        return f"""[ID: {self.__id} | Book: '{self.__book.title}' | Devolution Date: {self.__devolution} | Status: {self.__status}]\n"""
+        return f"""[ID: {self.__id} | Book: '{self.__book.title}' | Devolution Date: {self.__devolution} | Status: {self.__status} | Username: {self.__username}]\n"""
 
     
     def update_status(self) -> None:
