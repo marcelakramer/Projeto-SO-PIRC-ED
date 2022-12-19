@@ -4,7 +4,7 @@ import sys
 
 TAM_MSG = 1024 
 HOST = '127.0.0.1'
-PORT = 40001
+PORT = 40000
 LOGGED = False
 USERNAME = ''
 PASSWORD = ''
@@ -12,7 +12,7 @@ PASSWORD = ''
 def decode_cmd_usr(cmd_usr):
 	cmd_map = {
 		'register': 'register',  # [USERNAME] [PASSWORD] = register a new user
-		#'login': 'login', # [LOGIN] [USERNAME] [PASSWORD] = log in a registered user
+		'login': 'login', # [LOGIN] [USERNAME] [PASSWORD] = log in a registered user
 		'check': 'check', # [BOOK ISBN] = check if a book is available for loan
 		'list': 'list', # [USERNAME] [PASSWORD] = check the user's loan list
 		'loan': 'loan', # [BOOK ISBN] [USERNAME] [PASSWORD] = loan a book
@@ -20,7 +20,6 @@ def decode_cmd_usr(cmd_usr):
 		'renew': 'renew', # [LOAN ID] [USERNAME] [PASSWORD] = renew a book loan
 		'return': 'return', # [LOAN ID] = return a book
 		'quit': 'quit', # quit the connection
-		'login': 'login'
 	}
 	tokens = cmd_usr.split()
 	if tokens[0].lower() in cmd_map:

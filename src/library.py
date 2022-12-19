@@ -31,8 +31,9 @@ class Library:
         self.__users = LinkedList() # list of all the users registered
         self.__bookshelf = AVLBookshelf() # AVL Tree of all the books
         self.__autoinc = 1 # used for loan ID purposes
+        self.__load_books()
         self.__load_users()
-        # self.__load_lib_loans()
+        self.__load_lib_loans()
 
 
     @property
@@ -248,7 +249,7 @@ class Library:
                 new_user = User(user[0],user[1])
                 self.__users.insert(new_user)
 
-    def load_lib_loans(self):
+    def __load_lib_loans(self):
         with open('library_loans.csv', encoding='utf8') as lib_loans:
             loans = csv.reader(lib_loans,delimiter=',')
             for loan in loans:
@@ -264,6 +265,12 @@ class Library:
                 self.loans.insert(newLoan)
                 user.loans.insert(newLoan)
                 mutex_loan.release()
+    
+    def __load_books(self):
+        with open('registered_books.csv', encoding='utf8') as book_list:
+            books = csv.reader(book_list,delimiter=',')
+            for book in books:
+                self.register_book(int(book[0]),book[1])
             
 
 
