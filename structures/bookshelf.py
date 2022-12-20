@@ -2,31 +2,32 @@ import sys
 sys.path.append('./..')
 
 from structures.exceptions import AbsentObjectException
+
 class Node(object): 
-    def __init__(self, book: object): 
-        self.book = book 
+    def __init__(self, content: object): 
+        self.content = content 
         self.left = None
         self.right = None
         self.height = 1 # attribute that specifies the balance factor of the node
     
     def __str__(self):
-        return f'{self.book}'
+        return f'{self.content}'
   
 # AVL tree class
-class AVLBookshelf(object): 
-    def __init__(self, book:object = None) -> None:
+class AVLTree(object): 
+    def __init__(self, content:object = None) -> None:
         '''
         If method is initialized without any argument
         AVL is created with "None" at the root
 
         If the argument is given
-        a node with the book is created
+        a node with the content is created
         
         '''
-        if book is None:
+        if content is None:
             self.__root = None
         else:
-            self.__root = self.insert(book)
+            self.__root = self.insert(content)
 
 
     def isEmpty(self) -> bool:
@@ -39,9 +40,9 @@ class AVLBookshelf(object):
         return self.__root == None 
 
 
-    def insert(self, book:object) -> None:
+    def insert(self, content:object) -> None:
         '''
-        Call a private method to insert a book in the tree
+        Call a private method to insert a content in the tree
 
         Receives one object as an argument
         
@@ -49,28 +50,28 @@ class AVLBookshelf(object):
 
         # Inserts in the root if AVL is empty
         if(self.__root == None):
-            self.__root = Node(book)
+            self.__root = Node(content)
 
         # Calls a recursive function to insert
         else:
-            self.__root = self.__insert(self.__root, book)
+            self.__root = self.__insert(self.__root, content)
   
   
-    def __insert(self, root, book) -> Node:
+    def __insert(self, root, content) -> Node:
         '''
-        Objectively insert the book in the AVL
+        Objectively insert the content in the AVL
 
-        Receives the root and the book to be inserted as arguments
+        Receives the root and the content to be inserted as arguments
         
         '''
 
         # Performs a BST recursion to add the node
         if not root: 
-            return Node(book) 
-        elif book.isbn < root.book.isbn: 
-            root.left = self.__insert(root.left, book) 
+            return Node(content) 
+        elif content.id < root.content.id: 
+            root.left = self.__insert(root.left, content) 
         else: 
-            root.right = self.__insert(root.right, book) 
+            root.right = self.__insert(root.right, content) 
   
         # Update the height of ancestor node
         root.height = 1 + max(self.getHeight(root.left), 
@@ -83,20 +84,20 @@ class AVLBookshelf(object):
         # Then, one of the following actions will be performed:
 
         # Right rotation
-        if balance > 1 and book.isbn < root.left.book.isbn: 
+        if balance > 1 and content.id < root.left.content.id: 
             return self.__rightRotate(root) 
   
         # Left rotation
-        if balance < -1 and book.isbn > root.right.book.isbn: 
+        if balance < -1 and content.id > root.right.content.id: 
             return self.__leftRotate(root) 
   
         # Double rotation: Left Right 
-        if balance > 1 and book.isbn > root.left.book.isbn: 
+        if balance > 1 and content.id > root.left.content.id: 
             root.left = self.__leftRotate(root.left) 
             return self.__rightRotate(root) 
   
         # Double rotation: Right Left 
-        if balance < -1 and book.isbn < root.right.book.isbn: 
+        if balance < -1 and content.id < root.right.content.id: 
             root.right = self.__rightRotate(root.right) 
             return self.__leftRotate(root) 
   
@@ -197,25 +198,25 @@ class AVLBookshelf(object):
             right = self.__InOrder(root.right)
 
             # Returns a concatenated string of values of left and right nodes
-            return left + ' ' + str(root.book) + ' ' + right
+            return left + ' ' + str(root.content) + ' ' + right
 
 
-    def delete(self, book:object):
+    def delete(self, content:object):
         '''
         Deletes an instance calling a private method
 
-        It must receive the book to be deleted as an argument
+        It must receive the content to be deleted as an argument
 
         '''
         if(self.__root is not None):
-            self.__root = self.__delete(self.__root, book)
+            self.__root = self.__delete(self.__root, content)
         
 
-    def __delete(self, root:Node, book:object) -> Node:
+    def __delete(self, root:Node, content:object) -> Node:
         '''
-        Private method to delete the book
+        Private method to delete the content
 
-        Receives the book to be deleted
+        Receives the content to be deleted
         and the root
 
 
@@ -225,11 +226,11 @@ class AVLBookshelf(object):
         if not root: 
             return root   
 
-        # Search for the book by analyzing the ISBN
-        elif book.isbn < root.book.isbn: 
-            root.left = self.__delete(root.left, book)   
-        elif book.isbn > root.book.isbn: 
-            root.right = self.__delete(root.right, book)   
+        # Search for the content by analyzing the id
+        elif content.id < root.content.id: 
+            root.left = self.__delete(root.left, content)   
+        elif content.id > root.content.id: 
+            root.right = self.__delete(root.right, content)   
         else: 
             if root.left is None: 
                 temp = root.right 
@@ -241,10 +242,10 @@ class AVLBookshelf(object):
                 root = None
                 return temp 
   
-            temp = self.getMinbookNode(root.right) 
-            root.book = temp.book 
+            temp = self.getMincontentNode(root.right) 
+            root.content = temp.content 
             root.right = self.__delete(root.right, 
-                                      temp.book) 
+                                      temp.content) 
   
         # If the tree has only one node, 
         # simply return it 
@@ -283,20 +284,20 @@ class AVLBookshelf(object):
         return root 
 
         
-    def searchBook(self, book_isbn: int) -> bool:
+    def search(self, content_id: int) -> bool:
         '''
-        Calls a recursive function to search for a book
+        Calls a recursive function to search for a content
 
-        The book isbn must be passed
+        The content id must be passed
         
         '''
 
-        return self.__searchBook(book_isbn, self.__root)
+        return self.__search(content_id, self.__root)
     
 
-    def __searchBook(self, book_isbn: int, node: Node) -> bool:
+    def __search(self, content_id: int, node: Node) -> bool:
         '''
-        Properly looks for the book passed through the arguments
+        Properly looks for the content passed through the arguments
 
         Returns a boolean to inform whether it was possible
         to find or not
@@ -307,61 +308,47 @@ class AVLBookshelf(object):
         if node is None:
             return False
 
-        # Found the book
-        if ( book_isbn == node.book.isbn):
+        # Found the content
+        if ( content_id == node.content.id):
             return True
 
-        # Search by the ISBN
-        elif ( book_isbn < node.book.isbn and node.left != None):
-            return self.__searchBook( book_isbn, node.left)
-        elif ( book_isbn > node.book.isbn and node.right != None):
-            return self.__searchBook( book_isbn, node.right)
+        # Search by the id
+        elif ( content_id < node.content.id and node.left != None):
+            return self.__search( content_id, node.left)
+        elif ( content_id > node.content.id and node.right != None):
+            return self.__search( content_id, node.right)
         else:
             return False
 
-    def getBook(self, book_isbn: int) -> object:
+    def get(self, content_id: int) -> object:
         '''
-        Returns an specific book based on the ISBN
+        Returns an specific content based on the id
         Calls a private method
 
-        Needs the ISBN as an argument
+        Needs the id as an argument
 
         '''
 
-        if not self.searchBook(book_isbn):
+        if not self.search(content_id):
             raise AbsentObjectException
 
-        return self.__getBook(book_isbn, self.__root)
+        return self.__get(content_id, self.__root)
 
     
-    def __getBook(self, book_isbn: int, node: Node) -> object:
+    def __get(self, content_id: int, node: Node) -> object:
         '''
-        Private method of "getBook"
+        Private method of "getcontent"
 
-        Receives the ISBN and the root as the arguments
+        Receives the id and the root as the arguments
 
         '''
         if node is None:
             return 
-        if ( book_isbn == node.book.isbn ):
-            return node.book
-        elif ( book_isbn < node.book.isbn and node.left != None):
-            return self.__getBook( book_isbn, node.left)
-        elif ( book_isbn > node.book.isbn and node.right != None):
-            return self.__getBook( book_isbn, node.right)
+        if ( content_id == node.content.id ):
+            return node.content
+        elif ( content_id < node.content.id and node.left != None):
+            return self.__get( content_id, node.left)
+        elif ( content_id > node.content.id and node.right != None):
+            return self.__get( content_id, node.right)
         else:
             return 
-
-
-    def isAvailable(self, book_isbn: int) -> bool:
-        '''
-        Check if a book is available for loan based on the ISBN
-
-        Returns the book status
-
-        '''
-        if not self.searchBook(book_isbn):
-            raise AbsentObjectException
-        
-        book = self.getBook(book_isbn)
-        return book.status

@@ -5,18 +5,18 @@ class Book:
         Method that initializes the book instance with its attributes
         
         '''
-        self.__isbn = isbn
+        self.__id = isbn
         self.__title = title
         self.__status = True # available
 
 
     @property
-    def isbn(self) -> int:
+    def id(self) -> int:
         '''
         Method to access the isbn private attribute
         
         '''
-        return self.__isbn
+        return self.__id
 
 
     @property
@@ -42,7 +42,7 @@ class Book:
         Returns this string
 
         '''
-        return f"""[ISBN: {self.__isbn} | Title: '{self.__title}' |  Status: {'AVAILABLE' if self.__status else 'LOANED'}]\n"""
+        return f"""[ISBN: {self.__id} | Title: '{self.__title}' |  Status: {'AVAILABLE' if self.__status else 'LOANED'}]\n"""
 
     def update_status(self) -> None:
         '''

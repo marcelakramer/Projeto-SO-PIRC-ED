@@ -41,12 +41,3 @@ class EmptyListException(Exception):
     '''
     def __init__(self):
         super().__init__('The list is empty.')
-
-
-class LoginFailException(Exception):
-    '''
-    Exception for when there is a login fail.
-
-    '''
-    def __init__(self) -> None:
-        super().__init__('The username and/or the password are incorrect.')

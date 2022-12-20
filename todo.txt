@@ -1,2 +1,2 @@
-implementar o metodo list_books no servidor
- 
+adicionar update_loans
+rever os mutex

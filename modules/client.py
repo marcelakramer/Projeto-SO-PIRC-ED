@@ -4,7 +4,7 @@ import sys
 
 TAM_MSG = 1024 
 HOST = '127.0.0.1'
-PORT = 40001
+PORT = 40000
 LOGGED = False
 USERNAME = ''
 PASSWORD = ''
@@ -54,26 +54,23 @@ while True:
 	if cmd_usr != '':
 		cmd = decode_cmd_usr(cmd_usr)
 
-		if cmd.upper() == 'QUIT':
-			print('+OK\nDisconnecting...')
-			break
-		elif not LOGGED:
+		"""if cmd.upper() == 'QUIT':
+			print('+OK 29\nDisconnecting...')
+			break"""
+		if not LOGGED:
 			if (cmd_usr.split(' ')[0].upper() == 'REGISTER' or cmd_usr.split(' ')[0].upper() == 'LOGIN'):
 				sock.send(str.encode(cmd))
 				data = sock.recv(TAM_MSG)
 
 				if not data: 
 					break
-
+ 
 				data = data.decode()
 				print(f'\n{data}')
 
 				data = data.split(' ')
 				if data[1] == '20':
 					LOGGED = True
-					""" username = cmd_usr[1]
-					password = cmd_usr[2]
-					"""
 					USERNAME = cmd_usr.split()[1]
 					PASSWORD = cmd_usr.split()[2]
 					print('User registered successfully.\n')
@@ -88,6 +85,28 @@ while True:
 					print('User already registered.\n')
 				elif data[1] == '42':
 					print('Username and/or password incorrect.\n')
+				elif data[1] == '29':
+					print('Client disconnect request received successfully.\n')
+					break
+ 
+			elif cmd_usr.split(' ')[0].upper() == 'QUIT':
+				
+				sock.send(str.encode(cmd))
+				data = sock.recv(TAM_MSG)
+    
+
+				data = data.decode()
+				print(f'\n{data}')
+
+				data = data.split(' ')
+
+				if data[1] == '29':
+					print('Client disconnect request received successfully.\n')
+					break
+					
+				
+				
+     
 			else:
 				print(f'\n You need to be logged in to use this command.\n')
 		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'LOGIN'):
@@ -97,7 +116,7 @@ while True:
 			print('\nSession already initialized.\n')
 				
 		else:
-			cmd += ' ' + USERNAME + ' ' + PASSWORD
+			cmd += ' ' + USERNAME
 			sock.send(str.encode(cmd))
 			data = sock.recv(TAM_MSG)
 
@@ -109,8 +128,7 @@ while True:
 			
 			data = data.split(' ')
 			if data[1] == '22':
-				print('Booklist loko')
-			
+				print('Booklist accessed successfully.')
 			elif data[1] == '23':
 				print('Book available for loan.\n')
 			elif data[1] == '24':
@@ -125,8 +143,7 @@ while True:
 				print('Loan returned successfully.\n')
 			elif data[1] == '29':
 				print('Client disconnect request received successfully.\n')
-
-			
+				break
 			elif data[1] == '40':
 				print('Invalid command.\n')
 			elif data[1] == '43':

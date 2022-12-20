@@ -148,7 +148,6 @@ class Loan:
         
         if self.__returned == False:
             delta = self.__devolution - date.today()
-            print('salve')
             print(delta.days)
             if delta.days < 0:
                 print("entrei")
@@ -158,7 +157,7 @@ class Loan:
         else:
             self.__status = 'RETURNED'
 
-        tempfile = NamedTemporaryFile(mode="w", delete=False)
+        """tempfile = NamedTemporaryFile(mode="w", delete=False)
 
         with open("library_loans.csv", "r") as lib_loans, tempfile:
             reader = csv.reader(lib_loans, delimiter=',')
@@ -168,6 +167,8 @@ class Loan:
                 print(row)
 
                 if (row[0]) == str(loan_id):
+                    print("loko marcelinha loko")
+                    print(row[6], self.__status)
                     row[6] = self.__status
 
 
@@ -175,4 +176,4 @@ class Loan:
                     
                 writer.writerow(row)
         
-        shutil.move(tempfile.name, "library_loans.csv")
+        shutil.move(tempfile.name, "library_loans.csv")"""

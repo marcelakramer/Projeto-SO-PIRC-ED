@@ -15,9 +15,9 @@ from src.user import User
 from src.loan import Loan
 from src.book import Book
 
-from structures.bookshelf import AVLBookshelf
+from structures.bookshelf import AVLTree
 from structures.linkedlist import LinkedList
-from structures.exceptions import LoginFailException, AbsentObjectException, UnavailableObjectException
+from structures.exceptions import AbsentObjectException, UnavailableObjectException
 
 # creates the semaphores 
 mutex_loan = threading.Semaphore(1)
@@ -32,11 +32,14 @@ class Library:
     def __init__(self) -> None:
         self.__loans = LinkedList() # list of all the loans already made 
         self.__users = LinkedList() # list of all the users registered
-        self.__bookshelf = AVLBookshelf() # AVL Tree of all the books
+        self.__bookshelf = AVLTree() # AVL Tree of all the books
         self.__autoinc = 1 # used for loan ID purposes
         self.__load_books()
         self.__load_users()
+        print(self.__users)
         self.__load_lib_loans()
+        
+        
 
 
     @property
@@ -71,10 +74,13 @@ class Library:
         '''
         newUser = User(username, password) # creates a new instance of User object
         self.__users.insert(newUser) # insert the object in the list
+        
+        
+        """
         with open('registered_users.csv', 'a+', newline='', encoding='utf8') as user_list:
             writer = csv.writer(user_list)
             print(user_list)
-            writer.writerow([username,password])
+            writer.writerow([username,password])"""
 
     
     def login(self, username: str, password: str) -> bool:
@@ -106,7 +112,7 @@ class Library:
         Returns either True or False
         
         '''
-        return self.__bookshelf.searchBook(book_isbn) # checks if the book exists on the bookshelf and return the result
+        return self.__bookshelf.search(book_isbn) # checks if the book exists on the bookshelf and return the result
 
     
     def check_available(self, book_isbn: int) -> bool:
@@ -117,31 +123,33 @@ class Library:
         
         '''
         mutex_check.acquire() # 'up' on the semaphore
-
-        is_available = self.__bookshelf.isAvailable(book_isbn) # get the book status 
+        
+        if not self.check_book(book_isbn): # checks if the book exists on the bookshelf
+            raise AbsentObjectException
+        
+        book = self.__bookshelf.get(book_isbn) # gets the book based on its isbn
+    
+        is_available = book.status # get the book status 
 
         mutex_check.release() # 'down' on the semaphore
 
         return is_available # returns the book status
 
     
-    def loan_book(self, book_isbn: int, username: str, password: str) -> bool:
+    def loan_book(self, book_isbn: int, username: str) -> bool:
         '''
         Method to loan a book
 
         Returns either True or False
         
         '''
-        if not self.login(username, password): 
-            raise LoginFailException
         
-
         if not self.check_available(book_isbn): # check if the book is available
             raise UnavailableObjectException
 
         user = self.__users.get(username) # gets the user based on its username
 
-        book = self.__bookshelf.getBook(book_isbn) # gets the book based on its ISBN
+        book = self.__bookshelf.get(book_isbn) # gets the book based on its ISBN
 
         mutex_loan.acquire() # 'up' on the semaphore
 
@@ -153,28 +161,23 @@ class Library:
         self.loans.insert(newLoan) # inserts the loan on the library loan list
         user.loans.insert(newLoan) # inserts the loan on the user loan list
 
-        fields = ['LOANID', 'ISBN', 'DATE', 'RENEWAL', 'DEVOLUTION', 'RETURNED', 'STATUS', 'USERNAME']
-
-        with open('library_loans.csv', 'a+', newline='', encoding='utf8') as lib_loans:
+        """with open('library_loans.csv', 'a+', newline='', encoding='utf8') as lib_loans:
             writer = csv.writer(lib_loans)
             print(lib_loans)
-            writer.writerow([newLoan.id, book_isbn, newLoan.date, newLoan.renewal,newLoan.devolution,newLoan.returned,newLoan.status, newLoan.username])
+            writer.writerow([newLoan.id, book_isbn, newLoan.date, newLoan.renewal,newLoan.devolution,newLoan.returned,newLoan.status, newLoan.username])"""
     
 
         mutex_loan.release() # 'down' on the semaphore
 
         return True, newLoan.id # returns the loan ID
 
-    def check_loan_info(self, loan_id: int, username: str, password: str) -> str:
+    def check_loan_info(self, loan_id: int, username: str) -> str:
         '''
         Method to check a loan's information
 
         Returns a string with the loan information
         
         '''
-        if not self.login(username, password):
-            raise LoginFailException
-
         user = self.__users.get(username) # gets the user based on its username
 
         if not user.loans.search(loan_id): # checks if the user has a loan with the ID provided
@@ -185,39 +188,37 @@ class Library:
         return str(loan) # returns the loan information as string
 
     
-    def check_loan_list(self, username: str, password: str) -> str:
+    def check_loan_list(self, username: str) -> str:
         '''
         Method to check a user's loan list
 
         Returns the loan list as a string
         
         '''
-        if not self.login(username, password):
-            raise LoginFailException
 
         user = self.__users.get(username) # gets the user based on its username
         # updates all loans status 
         list = ''
-        for i in range(1, user.loans.length + 1):
+        for i in range(1, self.__loans.length + 1):
             print(i)
-            loan = user.loans.get(i)
+            loan = self.__loans.get(i)
             loan.update_status(i)
 
             list += str(loan)
             
         return list # returns all the user's loan as a string
+    
+    def update_loans(self):
+        pass
 
     
-    def renew_loan(self, loan_id: int, username: str, password: str) -> bool:
+    def renew_loan(self, loan_id: int, username: str) -> bool:
         '''
         Method to renew a loan
 
         Returns either True or False
         
         '''
-        if not self.login(username, password):
-            raise LoginFailException
-
         user = self.__users.get(username) # gets the user based on its username
 
         if not user.loans.search(loan_id): # checks if the user has a loan with the ID provided
@@ -231,10 +232,7 @@ class Library:
             loan.renewal = date.today() # renews the loan
             loan.devolution = loan.renewal + timedelta(days = 10) # recalculates the devolution date
 
-
-            fields = ['LOANID', 'ISBN', 'DATE', 'RENEWAL', 'DEVOLUTION', 'RETURNED', 'STATUS', 'USERNAME']
-
-            tempfile = NamedTemporaryFile(mode="w", delete=False)
+            """            tempfile = NamedTemporaryFile(mode="w", delete=False)
 
 
             with open("library_loans.csv", "r") as lib_loans, tempfile:
@@ -253,53 +251,30 @@ class Library:
                         
                     writer.writerow(row)
             
-            shutil.move(tempfile.name, "library_loans.csv")
-                        
-            '''
-
-
-                with open('library_loans.csv', '', newline='', encoding='utf8') as lib_loans_writer:
-                    writer = csv.DictWriter(lib_loans_writer, fieldnames=fields)
-
-                    for row in reader:
-                        print(row['LOANID'])
-                        if row['LOANID'] == loan_id:
-                            print(row)
-
-
-                            
-                            print(row['ISBN'])
-
-                            row['RENEWAL'] = loan.renewal
-                            row['DEVOLUTION'] = loan.devolution
-                        
-                        writer.writerow(row.values())'''
-
+            shutil.move(tempfile.name, "library_loans.csv")"""
 
             return True
 
         
-    def return_book(self, loan_id: int, username: str, password: str) -> None:
+    def return_book(self, loan_id: int, username: str) -> None:
         '''
         Method to return a book
         
         '''
-        if not self.login(username, password):
-            raise LoginFailException
-
         user = self.__users.get(username) # gets the user based on its username
 
         if not user.loans.search(loan_id): # checks if the user has a loan with the ID provided
             raise AbsentObjectException
 
-        loan = self.loans.get(loan_id) # gets the loan based on its ID
+        loan = self.__loans.get(loan_id) # gets the loan based on its ID
         loan.returned = True # updates the loan status to RETURNED
+        print(loan.returned)
         loan.update_status(loan_id)
 
         book = loan.book # gets the book from the loan
         book.update_status() # updates the book status
         user.loans.remove(loan_id) # removes the loan from the user current loans list
-
+        """
         tempfile = NamedTemporaryFile(mode="w", delete=False)
 
 
@@ -319,7 +294,7 @@ class Library:
                     
                 writer.writerow(row)
         
-        shutil.move(tempfile.name, "library_loans.csv")
+        shutil.move(tempfile.name, "library_loans.csv")"""
 
 
     def __load_users (self):
@@ -336,7 +311,7 @@ class Library:
             loans = csv.reader(lib_loans,delimiter=',')
             for loan in loans:
                 user = self.__users.get(loan[-1])
-                book = self.__bookshelf.getBook(int(loan[1]))
+                book = self.__bookshelf.get(int(loan[1]))
                 mutex_loan.acquire()
                 book.update_status()
                 newLoan = Loan(int(loan[0]),book,loan[-1])
@@ -371,5 +346,5 @@ class Library:
         Method to delete a book from the bookshelf
         
         '''
-        book = self.__bookshelf.getBook(book_isbn) # gets the book based on its ISBN
+        book = self.__bookshelf.get(book_isbn) # gets the book based on its ISBN
         self.__bookshelf.delete(book) # deletes the book from the bookshelf
