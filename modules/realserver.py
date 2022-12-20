@@ -12,7 +12,7 @@ import time
 
 TAM_MSG = 1024 
 HOST = '0.0.0.0' 
-PORT = 40000
+PORT = 40001
 
 mutex = threading.Semaphore(1)
 
@@ -23,12 +23,22 @@ def process_msg_client(msg, con, client):
 	if msg[0].upper() == 'REGISTER' and len(msg) == 3:
 		try:
 			library.register_user(msg[1],msg[2])
-			con.send(str.encode(f"+OK 21 {msg[1]}\n"))
+			con.send(str.encode(f"+OK 20 {msg[1]}\n"))
    
 		except AlreadyExistingObjectException:
 			con.send(str.encode(f'-ERR 41 \n'))
 
-	elif msg[0].upper() == 'CHECK' and len(msg) == 2 and msg[1].isdigit():
+	elif msg[0].upper() == 'LOGIN' and len(msg) == 3:
+		try:
+			if library.login(msg[1],msg[2]):
+				con.send(str.encode(f"+OK 21 {msg[1]}\n"))
+			else:
+				con.send(str.encode(f'-ERR 42 \n'))
+   
+		except AbsentObjectException:
+			con.send(str.encode(f'-ERR 42 \n'))
+
+	elif msg[0].upper() == 'CHECK' and len(msg) == 4 and msg[1].isdigit():
 		try:
 			book_title = library.bookshelf.getBook(int(msg[1])).title
 			if library.check_available(int(msg[1])):
@@ -70,6 +80,14 @@ def process_msg_client(msg, con, client):
    
 		except AbsentObjectException:
 			con.send(str.encode(f"-ERR 45 \n"))
+		except LoginFailException as lfe:
+			con.send(str.encode(f"{lfe}\n"))
+
+	elif msg[0].upper() == 'BOOKLIST' and len(msg) == 3:
+		try:
+			booklist = library.bookList()
+			con.send(str.encode(f"+OK 22 \n{booklist}"))
+
 		except LoginFailException as lfe:
 			con.send(str.encode(f"{lfe}\n"))
 
@@ -119,12 +137,8 @@ sock.bind(serv)
 sock.listen(50)
 
 library = Library()
-library.register_book(10, 'Harry Potter')
-library.register_book(20, 'O Pequeno Príncipe')
-library.register_book(30, 'Dom Quixote')
-library.register_book(40, 'Hamlet')
-library.register_book(50, 'Os Miseráveis')
 
+print(library.users)
 while True:
 	try:
 		con, client = sock.accept()

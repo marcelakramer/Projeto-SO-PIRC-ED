@@ -10,17 +10,18 @@ return [LOAN ID] = return a book
 quit = disconnect from server
 
 # Error codes
++OK 20 [ username ] : user registered successfully
++OK 21 [ username ] : user logged in successfully 
++OK 22 [ list of books ] : book list accessed successfully 
++OK 23 [ book title ] : book available for loan 
++OK 24 [ loan ID ] [ book title ] : loan done successfully 
++OK 25 [ loan’s info ] : loan info accessed successfully 
++OK 26 [ list of loans ] : loan list accessed successfully
++OK 27 [ loan ID ] : loan renewed successfully
++OK 28 [ loan ID ] : loan returned successfully
++OK 29: client disconnect request received successfully
 
-+OK 20 = operation perfomed successfully
-+OK 21 = user registered successfully
-+OK 22 = user logged in successfully
-+OK 23 = book available for loan
-+OK 24 = loan made successfully
-+OK 25 = loan info accessed successfully
-+OK 26 = loan list accessed successfully
-+OK 27 = loan renewed successfully
-+OK 28 = loan returned successfully
-+OK 29 = client disconnect request received
+
 
 -ERR 40 = invalid command
 -ERR 41 = user already registered

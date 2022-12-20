@@ -1,5 +1,8 @@
 # Initial imports
 
+from tempfile import NamedTemporaryFile
+import shutil
+
 from datetime import date, timedelta
 
 import threading
@@ -29,9 +32,11 @@ class Library:
     def __init__(self) -> None:
         self.__loans = LinkedList() # list of all the loans already made 
         self.__users = LinkedList() # list of all the users registered
-        self.__load_users()
         self.__bookshelf = AVLBookshelf() # AVL Tree of all the books
         self.__autoinc = 1 # used for loan ID purposes
+        self.__load_books()
+        self.__load_users()
+        self.__load_lib_loans()
 
 
     @property
@@ -142,11 +147,19 @@ class Library:
 
         book.update_status() # updates the book status for 'False"
 
-        newLoan = Loan(self.__autoinc, book) # creates a new loan instance for the book
+        newLoan = Loan(self.__autoinc, book, username) # creates a new loan instance for the book
         self.__autoinc += 1  
     
         self.loans.insert(newLoan) # inserts the loan on the library loan list
         user.loans.insert(newLoan) # inserts the loan on the user loan list
+
+        fields = ['LOANID', 'ISBN', 'DATE', 'RENEWAL', 'DEVOLUTION', 'RETURNED', 'STATUS', 'USERNAME']
+
+        with open('library_loans.csv', 'a+', newline='', encoding='utf8') as lib_loans:
+            writer = csv.writer(lib_loans)
+            print(lib_loans)
+            writer.writerow([newLoan.id, book_isbn, newLoan.date, newLoan.renewal,newLoan.devolution,newLoan.returned,newLoan.status, newLoan.username])
+    
 
         mutex_loan.release() # 'down' on the semaphore
 
@@ -168,7 +181,7 @@ class Library:
             raise AbsentObjectException
 
         loan = user.loans.get(loan_id) # gets the loan based on its ID
-        loan.update_status() # updates the loan status before returning its information
+        loan.update_status(loan_id) # updates the loan status before returning its information
         return str(loan) # returns the loan information as string
 
     
@@ -184,9 +197,15 @@ class Library:
 
         user = self.__users.get(username) # gets the user based on its username
         # updates all loans status 
-        for i in range(1, user.loans.length):
-            user.loans.get(i).update_status()
-        return str(user.loans) # returns all the user's loan as a string
+        list = ''
+        for i in range(1, user.loans.length + 1):
+            print(i)
+            loan = user.loans.get(i)
+            loan.update_status(i)
+
+            list += str(loan)
+            
+        return list # returns all the user's loan as a string
 
     
     def renew_loan(self, loan_id: int, username: str, password: str) -> bool:
@@ -205,12 +224,57 @@ class Library:
             raise AbsentObjectException
 
         loan = user.loans.get(loan_id) # gets the loan based on its ID
-        loan.update_status() # updates the loan status
+        loan.update_status(loan_id) # updates the loan status
         if loan.status == 'LATE': # checks if the loan is LATE
-                raise UnavailableObjectException
+            raise UnavailableObjectException
         else:
             loan.renewal = date.today() # renews the loan
             loan.devolution = loan.renewal + timedelta(days = 10) # recalculates the devolution date
+
+
+            fields = ['LOANID', 'ISBN', 'DATE', 'RENEWAL', 'DEVOLUTION', 'RETURNED', 'STATUS', 'USERNAME']
+
+            tempfile = NamedTemporaryFile(mode="w", delete=False)
+
+
+            with open("library_loans.csv", "r") as lib_loans, tempfile:
+                reader = csv.reader(lib_loans, delimiter=',')
+                writer = csv.writer(tempfile)
+
+                for row in reader:
+                    print(row)
+
+                    if (row[0]) == str(loan_id):
+                        row[3] = loan.renewal
+                        row[4] = loan.devolution
+
+
+                            
+                        
+                    writer.writerow(row)
+            
+            shutil.move(tempfile.name, "library_loans.csv")
+                        
+            '''
+
+
+                with open('library_loans.csv', '', newline='', encoding='utf8') as lib_loans_writer:
+                    writer = csv.DictWriter(lib_loans_writer, fieldnames=fields)
+
+                    for row in reader:
+                        print(row['LOANID'])
+                        if row['LOANID'] == loan_id:
+                            print(row)
+
+
+                            
+                            print(row['ISBN'])
+
+                            row['RENEWAL'] = loan.renewal
+                            row['DEVOLUTION'] = loan.devolution
+                        
+                        writer.writerow(row.values())'''
+
 
             return True
 
@@ -229,10 +293,33 @@ class Library:
             raise AbsentObjectException
 
         loan = self.loans.get(loan_id) # gets the loan based on its ID
-        loan.status = 'RETURNED' # updates the loan status to RETURNED
+        loan.returned = True # updates the loan status to RETURNED
+        loan.update_status(loan_id)
+
         book = loan.book # gets the book from the loan
         book.update_status() # updates the book status
         user.loans.remove(loan_id) # removes the loan from the user current loans list
+
+        tempfile = NamedTemporaryFile(mode="w", delete=False)
+
+
+        with open("library_loans.csv", "r") as lib_loans, tempfile:
+            reader = csv.reader(lib_loans, delimiter=',')
+            writer = csv.writer(tempfile)
+
+            for row in reader:
+                print(row)
+
+                if (row[0]) == str(loan_id):
+                    row[5] = loan.returned
+                    row[6] = loan.status
+
+
+                        
+                    
+                writer.writerow(row)
+        
+        shutil.move(tempfile.name, "library_loans.csv")
 
 
     def __load_users (self):
@@ -243,7 +330,31 @@ class Library:
                 print(user)
                 new_user = User(user[0],user[1])
                 self.__users.insert(new_user)
-        
+
+    def __load_lib_loans(self):
+        with open('library_loans.csv', encoding='utf8') as lib_loans:
+            loans = csv.reader(lib_loans,delimiter=',')
+            for loan in loans:
+                user = self.__users.get(loan[-1])
+                book = self.__bookshelf.getBook(int(loan[1]))
+                mutex_loan.acquire()
+                book.update_status()
+                newLoan = Loan(int(loan[0]),book,loan[-1])
+                newLoan.date = date.fromisoformat(loan[2])
+                newLoan.renewal = date.fromisoformat(loan[3])
+                newLoan.devolution = date.fromisoformat(loan[4])
+                self.__autoinc = int(loan[0]) + 1
+                self.loans.insert(newLoan)
+                user.loans.insert(newLoan)
+                mutex_loan.release()
+    
+    def __load_books(self):
+        with open('registered_books.csv', encoding='utf8') as book_list:
+            books = csv.reader(book_list,delimiter=',')
+            for book in books:
+                self.register_book(int(book[0]),book[1])
+            
+
 
     def bookList(self) -> str:
         '''

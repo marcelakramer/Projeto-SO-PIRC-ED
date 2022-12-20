@@ -1,9 +1,15 @@
 # Initial imports
+
+from tempfile import NamedTemporaryFile
+import shutil
+
+import csv
+
 from datetime import date, timedelta
 
 # Class Loan
 class Loan:
-    def __init__(self, id: int, book: object) -> None:
+    def __init__(self, id: int, book: object, username: str) -> None:
         '''
         Method that initializes the loan instance with its attributes
         
@@ -13,8 +19,9 @@ class Loan:
         self.__date = date.today()
         self.__renewal = self.__date
         self.__devolution = self.__date + timedelta(days = 10) # sets the devolution date to 10 days after the current date
-        self.__returned = None
+        self.__returned = False
         self.__status = 'ON TIME'
+        self.__username = username
 
     
     @property
@@ -56,7 +63,38 @@ class Loan:
         
         '''
         return self.__status
+    
+    @property
+    def date(self) -> str:
+        '''
+        Method to access the status private attribute
+        
+        '''
+        return self.__date
 
+    @property
+    def returned(self) -> str:
+        '''
+        Method to access the status private attribute
+        
+        '''
+        return self.__returned
+    
+    @property
+    def username(self) -> str:
+        '''
+        Method to access the status private attribute
+        
+        '''
+        return self.__username
+
+    @date.setter
+    def date(self, date: date) -> None:
+        '''
+        Method to change the renewal private attribute
+        
+        '''
+        self.__date = date
 
     @renewal.setter
     def renewal(self, new_renewal: date) -> None:
@@ -83,6 +121,10 @@ class Loan:
         
         '''
         self.__status = new_status
+
+    @returned.setter
+    def returned(self, new_status: bool) -> None:
+        self.__returned = new_status
     
 
     def __str__(self) -> str:
@@ -92,23 +134,45 @@ class Loan:
         Returns this string
 
         '''
-        return f"""[ID: {self.__id} | Book: '{self.__book.title}' | Devolution Date: {self.__devolution} | Status: {self.__status}]\n"""
+        return f"""[ID: {self.__id} | Book: '{self.__book.title}' | Devolution Date: {self.__devolution} | Status: {self.__status} | Username: {self.__username}]\n"""
 
     
-    def update_status(self) -> None:
+    def update_status(self, loan_id: int) -> None:
         '''
-        Method that update the loan status based on the difference between the loan date and the devolution date or on the 'returned' attribute
+        Method that update the loan status basjed on the difference between the loan date and the devolution date or on the 'returned' attribute
 
         Returns this string
 
         '''
-        if self.__returned == None:
-            delta = self.__devolution - self.__renewal
-            print(delta)
-            if delta.days > 10: # checks if more than 10 days have passed since the loan date
+
+        
+        if self.__returned == False:
+            delta = self.__devolution - date.today()
+            print('salve')
+            print(delta.days)
+            if delta.days < 0:
+                print("entrei")
                 self.__status = 'LATE'
             else:
                 self.__status = 'ON TIME'
         else:
-            self.__returned = True
             self.__status = 'RETURNED'
+
+        tempfile = NamedTemporaryFile(mode="w", delete=False)
+
+        with open("library_loans.csv", "r") as lib_loans, tempfile:
+            reader = csv.reader(lib_loans, delimiter=',')
+            writer = csv.writer(tempfile)
+
+            for row in reader:
+                print(row)
+
+                if (row[0]) == str(loan_id):
+                    row[6] = self.__status
+
+
+                        
+                    
+                writer.writerow(row)
+        
+        shutil.move(tempfile.name, "library_loans.csv")
