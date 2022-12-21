@@ -1,10 +1,4 @@
 # Initial imports
-
-from tempfile import NamedTemporaryFile
-import shutil
-
-import csv
-
 from datetime import date, timedelta
 
 # Class Loan
@@ -41,6 +35,14 @@ class Loan:
         return self.__book
 
     @property
+    def date(self) -> str:
+        '''
+        Method to access the status private attribute
+        
+        '''
+        return self.__date
+
+    @property
     def renewal(self) -> date:
         '''
         Method to access the renewal private attribute
@@ -63,14 +65,6 @@ class Loan:
         
         '''
         return self.__status
-    
-    @property
-    def date(self) -> str:
-        '''
-        Method to access the status private attribute
-        
-        '''
-        return self.__date
 
     @property
     def returned(self) -> str:
@@ -144,8 +138,6 @@ class Loan:
         Returns this string
 
         '''
-
-        
         if self.__returned == False:
             delta = self.__devolution - date.today()
             if delta.days < 0:
@@ -154,24 +146,16 @@ class Loan:
                 self.__status = 'ON TIME'
         else:
             self.__status = 'RETURNED'
+            
 
-        """tempfile = NamedTemporaryFile(mode="w", delete=False)
+    def __eq__(self, other: int) -> bool:
+        return self.__id == other
 
-        with open("library_loans.csv", "r") as lib_loans, tempfile:
-            reader = csv.reader(lib_loans, delimiter=',')
-            writer = csv.writer(tempfile)
+    def __ne__(self, other: int) -> bool:
+        return self.__id != other
 
-            for row in reader:
-                print(row)
+    def __gt__(self, other: int) -> bool:
+        return self.__id > other
 
-                if (row[0]) == str(loan_id):
-                    print("loko marcelinha loko")
-                    print(row[6], self.__status)
-                    row[6] = self.__status
-
-
-                        
-                    
-                writer.writerow(row)
-        
-        shutil.move(tempfile.name, "library_loans.csv")"""
+    def __lt__(self, other: int) -> bool:
+        return self.__id < other

@@ -1,8 +1,4 @@
 # Initial imports
-
-from tempfile import NamedTemporaryFile
-import shutil
-
 from datetime import date, timedelta
 
 import threading
@@ -75,16 +71,12 @@ class Library:
 
         newUser = User(username, password) # creates a new instance of User object
         self.__users.insert(newUser) # insert the object in the list
-
         
         mutex_register.release() # down
-        
-        
-        """
+    
         with open('registered_users.csv', 'a+', newline='', encoding='utf8') as user_list:
             writer = csv.writer(user_list)
-            print(user_list)
-            writer.writerow([username,password])"""
+            writer.writerow([username,password])
 
     
     def register_book(self, book_isbn: int, book_title: str) -> None:
@@ -129,8 +121,10 @@ class Library:
         
         '''
         mutex_check.acquire() # 'up' on the semaphore
-        
+      
         if not self.check_book(book_isbn): # checks if the book exists on the bookshelf
+            mutex_check.release() # 'down' on the semaphore
+            mutex_loan.release() # 'down' on loan semaphore
             raise AbsentObjectException
         
         book = self.__bookshelf.get(book_isbn) # gets the book based on its isbn
@@ -149,30 +143,24 @@ class Library:
         Returns either True or False
         
         '''
-        
+        mutex_loan.acquire() # 'up' on the semaphore
+
         if not self.check_available(book_isbn): # check if the book is available
+            mutex_loan.release() # 'down' on the semaphore
             raise UnavailableObjectException
 
         user = self.__users.get(username) # gets the user based on its username
 
         book = self.__bookshelf.get(book_isbn) # gets the book based on its ISBN
-
-        mutex_loan.acquire() # 'up' on the semaphore
-
-        book.update_status() # updates the book status for 'False"
+      
+        book.update_status() # updates the book status for 'False'
 
         newLoan = Loan(self.__autoinc, book, username) # creates a new loan instance for the book
         self.__autoinc += 1  
     
         self.loans.insert(newLoan) # inserts the loan on the library loan list
         user.loans.insert(newLoan) # inserts the loan on the user loan list
-
-        """with open('library_loans.csv', 'a+', newline='', encoding='utf8') as lib_loans:
-            writer = csv.writer(lib_loans)
-            print(lib_loans)
-            writer.writerow([newLoan.id, book_isbn, newLoan.date, newLoan.renewal,newLoan.devolution,newLoan.returned,newLoan.status, newLoan.username])"""
-    
-
+        
         mutex_loan.release() # 'down' on the semaphore
 
         return True, newLoan.id # returns the loan ID
@@ -209,7 +197,6 @@ class Library:
 
         # This for loop will look at all the loans in the library_loans list
         for i in range(1, self.__loans.length + 1):
-            print(self.__loans.get(i).returned)
             try:
                 loan = user.loans.get(i)
                 list += str(loan)
@@ -250,27 +237,6 @@ class Library:
             loan.renewal = date.today() # renews the loan
             loan.devolution = loan.renewal + timedelta(days = 10) # recalculates the devolution date
 
-            """            tempfile = NamedTemporaryFile(mode="w", delete=False)
-
-
-            with open("library_loans.csv", "r") as lib_loans, tempfile:
-                reader = csv.reader(lib_loans, delimiter=',')
-                writer = csv.writer(tempfile)
-
-                for row in reader:
-                    print(row)
-
-                    if (row[0]) == str(loan_id):
-                        row[3] = loan.renewal
-                        row[4] = loan.devolution
-
-
-                            
-                        
-                    writer.writerow(row)
-            
-            shutil.move(tempfile.name, "library_loans.csv")"""
-
             return True
 
         
@@ -291,59 +257,61 @@ class Library:
         book = loan.book # gets the book from the loan
         book.update_status() # updates the book status
         user.loans.remove(loan_id) # removes the loan from the user current loans list
-        """
-        tempfile = NamedTemporaryFile(mode="w", delete=False)
-
-
-        with open("library_loans.csv", "r") as lib_loans, tempfile:
-            reader = csv.reader(lib_loans, delimiter=',')
-            writer = csv.writer(tempfile)
-
-            for row in reader:
-                print(row)
-
-                if (row[0]) == str(loan_id):
-                    row[5] = loan.returned
-                    row[6] = loan.status
-
-
-                        
-                    
-                writer.writerow(row)
-        
-        shutil.move(tempfile.name, "library_loans.csv")"""
-
 
 
     def __load_users (self):
+        # Opens the users file
         with open('registered_users.csv', encoding='utf8') as registered_users:
+
+            # Reads every user and puts it into a variable
             user_list = csv.reader(registered_users,delimiter=',')
 
+            # For each user(row) of the list
             for user in user_list:
+                # Inserts a new user on the list
                 new_user = User(user[0],user[1])
                 self.__users.insert(new_user)
 
     def __load_lib_loans(self):
+        # Opens loans file
         with open('library_loans.csv', encoding='utf8') as lib_loans:
+
+            # Reads all loans
             loans = csv.reader(lib_loans,delimiter=',')
+
             for loan in loans:
                 user = self.__users.get(loan[-1])
                 book = self.__bookshelf.get(int(loan[1]))
+
                 mutex_loan.acquire()
+                
                 book.update_status()
+
+                # Creates a new loan
+                # Inserts a date, renewal and the devolution date into it
                 newLoan = Loan(int(loan[0]),book,loan[-1])
                 newLoan.date = date.fromisoformat(loan[2])
                 newLoan.renewal = date.fromisoformat(loan[3])
                 newLoan.devolution = date.fromisoformat(loan[4])
+
+                # Increments the loan ID
                 self.__autoinc = int(loan[0]) + 1
+
+                # Inserts
                 self.loans.insert(newLoan)
                 user.loans.insert(newLoan)
+
                 mutex_loan.release()
     
+
     def __load_books(self):
+        # Opens the books file
         with open('registered_books.csv', encoding='utf8') as book_list:
+            # Read all books
             books = csv.reader(book_list,delimiter=',')
+
             for book in books:
+                # Register every book
                 self.register_book(int(book[0]),book[1])
             
 
@@ -357,8 +325,8 @@ class Library:
         '''
         mutex_booklist.acquire() #up
 
-        booklist = self.__bookshelf.InOrder() # returns all the books as a string ordered by their ISBN
+        booklist = self.__bookshelf.InOrder() # gets all the books as a string ordered by their ISBN
 
         mutex_booklist.release() #down
         
-        return booklist
+        return booklist # returns the string

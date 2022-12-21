@@ -18,7 +18,6 @@ class Book:
         '''
         return self.__id
 
-
     @property
     def title(self) -> str:
         '''
@@ -52,5 +51,15 @@ class Book:
         self.__status = not self.__status
         
         
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: int) -> bool:
         return self.__id == other
+
+    def __ne__(self, other: int) -> bool:
+        return self.__id != other
+
+    def __gt__(self, other: int) -> bool:
+        return self.__id > other
+
+    def __lt__(self, other: int) -> bool:
+        return self.__id < other
+

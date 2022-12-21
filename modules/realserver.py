@@ -1,3 +1,8 @@
+from tempfile import NamedTemporaryFile
+import shutil
+import csv
+
+
 import sys
 sys.path.append('./..')
 
@@ -5,12 +10,13 @@ sys.path.append('./..')
 from src.library import Library
 from structures.exceptions import *
 
+
 import socket
 import threading
 
 TAM_MSG = 1024 
 HOST = '0.0.0.0' 
-PORT = 40001
+PORT = 40002
 
 mutex = threading.Semaphore(1)
 
@@ -69,11 +75,11 @@ def process_msg_client(msg, con, client):
 			
 	# Tries to loan a book
 	elif msg[0].upper() == 'LOAN' and len(msg) == 3 and msg[1].isdigit():
-
 		try:
 			# Calls loan method passing the ISBN and the username
+			
 			loan = library.loan_book(int(msg[1]), msg[2])
-
+			
 			# loan[0] should be True if it worked
 			if loan[0]:
 				# Gets the title of the book based on the ISBN
@@ -137,9 +143,21 @@ def process_msg_client(msg, con, client):
 			con.send(str.encode(f"-ERR 47 \n"))
 		
 	# To finish a client connection
-	elif msg[0].upper() == 'QUIT' and len(msg) == 1:
+	elif msg[0].upper() == 'QUIT' and (len(msg) == 1 or len(msg) == 2): 
+
+		with open("library_loans.csv", "w") as loans:
+				reader = library.loans
+				writer = csv.writer(loans)
+
+				for row in range(1,len(reader) +1):
+					loan = reader.get(row)
+
+					writer.writerow([loan.id,loan.book.id,loan.date,loan.renewal,loan.devolution,loan.returned,loan.status,loan.username])
+		
 		con.send(str.encode('+OK 29 \n')) # sends successful status to the client
 		return False
+
+
 
 
 	# If none of those methods matched the user input:
@@ -156,6 +174,8 @@ def process_client(con, client):
 		msg = con.recv(TAM_MSG)
 		if not msg or not process_msg_client(msg, con, client):
 			break
+
+	
 	con.close()
 	print('Disconnected client: ', client)
 	

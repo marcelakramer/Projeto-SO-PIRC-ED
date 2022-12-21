@@ -5,7 +5,6 @@ sys.path.append('./..') # allows the /strcutures files import
 
 from structures.linkedlist import LinkedList
 
-
 # Class User
 class User:
     def __init__(self, username: str, password: str) -> None:
@@ -47,3 +46,15 @@ class User:
 Username: '{self.__id}'
 Loans: {self.loans}
             ''' 
+
+    def __eq__(self, other: int) -> bool:
+        return self.__id == other
+
+    def __ne__(self, other: int) -> bool:
+        return self.__id != other
+
+    def __gt__(self, other: int) -> bool:
+        return self.__id > other
+
+    def __lt__(self, other: int) -> bool:
+        return self.__id < other

@@ -12,14 +12,14 @@ PASSWORD = ''
 def decode_cmd_usr(cmd_usr):
 	cmd_map = {
 		'register': 'register',  # [USERNAME] [PASSWORD] = register a new user
-		'login': 'login', # [LOGIN] [USERNAME] [PASSWORD] = log in a registered user
+		'login': 'login', # [USERNAME] [PASSWORD] = log in a registered user
 		'check': 'check', # [BOOK ISBN] = check if a book is available for loan
-		'list': 'list', # [USERNAME] [PASSWORD] = check the user's loan list
-		'loan': 'loan', # [BOOK ISBN] [USERNAME] [PASSWORD] = loan a book
+		'list': 'list', # = check the user's loan list
+		'loan': 'loan', # [BOOK ISBN] = loan a book
 		'info': 'info', # [LOAN ID] = check loan's info
-		'renew': 'renew', # [LOAN ID] [USERNAME] [PASSWORD] = renew a book loan
+		'renew': 'renew', # [LOAN ID] = renew a book loan
 		'return': 'return', # [LOAN ID] = return a book
-		'booklist': 'booklist', # [BOOKLIST] = show all books
+		'booklist': 'booklist', # = show all books
 		'quit': 'quit', # quit the connection
 	}
 	tokens = cmd_usr.split()
@@ -95,21 +95,21 @@ while True:
 				data = data.split(' ')
 
 				if data[1] == '29':
-					print('Client disconnect request received successfully.\n')
+					print('+OK 29\n\nClient disconnect request received successfully.\n')
 					break
      
 			else:
 				if (cmd_usr.split(' ')[0].upper() in ('BOOKLIST', 'CHECK', 'LIST', 'LOAN', 'INFO', 'RENEW', 'RETURN')):
-					print(f'\n-ERR 49\nLogin required.\n')
+					print(f'-ERR 49\n\nLogin required.\n')
 				else:
 					print(f'-ERR 40 {cmd_usr}\n\nInvalid command.\n')
 				
 
 		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'LOGIN'):
-			print('\n-ERR 42\nUser already logged in.\n')
+			print('-ERR 42\n\nUser already logged in.\n')
 
 		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'REGISTER'):
-			print('\n-ERR 41\nSession already initialized.\n')
+			print('-ERR 41\n\nSession already initialized.\n')
 				
 		else:
 			cmd += ' ' + USERNAME
