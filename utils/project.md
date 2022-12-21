@@ -21,13 +21,14 @@ quit = disconnect from server
 +OK 28 [ loan ID ] : loan returned successfully
 +OK 29: client disconnect request received successfully
 
-
-
 -ERR 40 = invalid command
--ERR 41 = user already registered
--ERR 42 = the username or the password are incorrect
--ERR 43 = book not registered on the bookshelf
--ERR 44 = book unavailable for loan
--ERR 45 = unexistent loan for this user
--ERR 46 = loan already late
+-ERR 41 = session already initialized
+-ERR 42 = user already logged in
+-ERR 43 = user already registered
+-ERR 44 = the username or the password are incorrect
+-ERR 45 = book not registered on the bookshelf
+-ERR 46 = book unavailable for loan
+-ERR 47 = unexistent loan for this user
+-ERR 48 = loan already late
+-ERR 49 = login required
 

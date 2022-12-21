@@ -1,2 +1,0 @@
-adicionar update_loans
-rever os mutex

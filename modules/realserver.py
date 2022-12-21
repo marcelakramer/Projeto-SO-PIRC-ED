@@ -6,13 +6,11 @@ from src.library import Library
 from structures.exceptions import *
 
 import socket
-import os
 import threading
-import time
 
 TAM_MSG = 1024 
 HOST = '0.0.0.0' 
-PORT = 40000
+PORT = 40001
 
 mutex = threading.Semaphore(1)
 
@@ -22,7 +20,6 @@ def process_msg_client(msg, con, client):
 	msg = msg.split()
 
 	if msg[0].upper() == 'REGISTER' and len(msg) == 3:
-
 		try:
 			library.register_user(msg[1],msg[2]) # tries to register a new user passing the username and the password
 			con.send(str.encode(f"+OK 20 {msg[1]}\n")) # sends successful status to the client
@@ -30,18 +27,18 @@ def process_msg_client(msg, con, client):
 
 		# If it alteady exists
 		except AlreadyExistingObjectException:
-			con.send(str.encode(f'-ERR 41 \n'))
+			con.send(str.encode(f'-ERR 43 \n'))
 
 	elif msg[0].upper() == 'LOGIN' and len(msg) == 3:
 		try:
 			if library.login(msg[1],msg[2]):
 				con.send(str.encode(f"+OK 21 {msg[1]}\n")) # sends successful status to the client
 			else:
-				con.send(str.encode(f'-ERR 42 \n'))
+				con.send(str.encode(f'-ERR 44 \n'))
    
 		# Password and/or username is incorrect
 		except AbsentObjectException:
-			con.send(str.encode(f'-ERR 42 \n'))
+			con.send(str.encode(f'-ERR 44 \n'))
 
 
 	# List all books
@@ -51,6 +48,7 @@ def process_msg_client(msg, con, client):
 
 		# sends successful status to the client
 		con.send(str.encode(f"+OK 22 \n{booklist}")) 
+
 
 	# Check if a book is available
 	elif msg[0].upper() == 'CHECK' and len(msg) == 3 and msg[1].isdigit():
@@ -63,10 +61,11 @@ def process_msg_client(msg, con, client):
 				# sends successful status to the client
 				con.send(str.encode(f"+OK 23 {book_title} \n")) 
 			else:
-				con.send(str.encode(f"-ERR 44 \n"))
+				con.send(str.encode(f"-ERR 46 \n"))
 
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR 43 \n"))
+			con.send(str.encode(f"-ERR 45 \n"))
+
 			
 	# Tries to loan a book
 	elif msg[0].upper() == 'LOAN' and len(msg) == 3 and msg[1].isdigit():
@@ -84,14 +83,13 @@ def process_msg_client(msg, con, client):
 		
 		# If a book is not registered:
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR 43 \n"))
+			con.send(str.encode(f"-ERR 45 \n"))
 
 		# If a book is not available for loan:
 		except UnavailableObjectException:
-			con.send(str.encode(f"-ERR 44 \n"))
+			con.send(str.encode(f"-ERR 46 \n"))
 		
 			
-
 	# Checks the info of a loan
 	elif msg[0].upper() == 'INFO' and len(msg) == 3 and msg[1].isdigit():
 		try:
@@ -101,9 +99,8 @@ def process_msg_client(msg, con, client):
 	
 		# If the user has no loan with that ID
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR 45 \n"))
+			con.send(str.encode(f"-ERR 47 \n"))
 
-	
 	
 	# Returns all the loan list of a user
 	elif msg[0].upper() == 'LIST' and len(msg) == 2:
@@ -121,11 +118,11 @@ def process_msg_client(msg, con, client):
    
 		# If there is no loan for that user:
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR 45 \n"))
+			con.send(str.encode(f"-ERR 47 \n"))
 
 		# If loan is late (Not possible to renew a late loan)
 		except UnavailableObjectException:
-			con.send(str.encode(f"-ERR 46 \n"))
+			con.send(str.encode(f"-ERR 48 \n"))
 		
 			
 	# Returns a loaned book
@@ -135,10 +132,9 @@ def process_msg_client(msg, con, client):
 			library.return_book(int(msg[1]), msg[2])
 			con.send(str.encode(f"+OK 28 {msg[1]}\n")) # sends successful status to the client
 	
-
 		# If that loan does not existe for that user:
 		except AbsentObjectException:
-			con.send(str.encode(f"-ERR 45 \n"))
+			con.send(str.encode(f"-ERR 47 \n"))
 		
 	# To finish a client connection
 	elif msg[0].upper() == 'QUIT' and len(msg) == 1:
@@ -148,7 +144,7 @@ def process_msg_client(msg, con, client):
 
 	# If none of those methods matched the user input:
 	else:
-		msg = (' ').join(msg)
+		msg = (' ').join(msg[:-1])
 		con.send(str.encode(f'-ERR 40 {msg}\n'))
 	return True
 

@@ -46,7 +46,6 @@ print('Para encerrar use QUIT ou CTRL+C\n')
 while True:
 	try:
 		cmd_usr = input('KES> ')
-		print(cmd_usr.split(' '))
 	except KeyboardInterrupt:
 		print('\nDisconnecting...')
 		break
@@ -54,9 +53,6 @@ while True:
 	if cmd_usr != '':
 		cmd = decode_cmd_usr(cmd_usr)
 
-		"""if cmd.upper() == 'QUIT':
-			print('+OK 29\nDisconnecting...')
-			break"""
 		if not LOGGED:
 			if (cmd_usr.split(' ')[0].upper() == 'REGISTER' or cmd_usr.split(' ')[0].upper() == 'LOGIN'):
 				sock.send(str.encode(cmd))
@@ -66,7 +62,7 @@ while True:
 					break
  
 				data = data.decode()
-				print(f'\n{data}')
+				print(data)
 
 				data = data.split(' ')
 				if data[1] == '20':
@@ -79,41 +75,41 @@ while True:
 					PASSWORD = cmd_usr.split()[2]
 					LOGGED = True
 					print('User logged in successfully.\n')
-				elif data[1] == '40':
-					print('Invalid command.\n')
-				elif data[1] == '41':
-					print('User already registered.\n')
-				elif data[1] == '42':
-					print('Username and/or password incorrect.\n')
 				elif data[1] == '29':
 					print('Client disconnect request received successfully.\n')
 					break
+				elif data[1] == '40':
+					print('Invalid command.\n')
+				elif data[1] == '43':
+					print('User already registered.\n')
+				elif data[1] == '44':
+					print('Username and/or password incorrect.\n')
  
 			elif cmd_usr.split(' ')[0].upper() == 'QUIT':
 				
 				sock.send(str.encode(cmd))
 				data = sock.recv(TAM_MSG)
-    
 
 				data = data.decode()
-				print(f'\n{data}')
 
 				data = data.split(' ')
 
 				if data[1] == '29':
 					print('Client disconnect request received successfully.\n')
 					break
-					
-				
-				
      
 			else:
-				print(f'\n You need to be logged in to use this command.\n')
+				if (cmd_usr.split(' ')[0].upper() in ('BOOKLIST', 'CHECK', 'LIST', 'LOAN', 'INFO', 'RENEW', 'RETURN')):
+					print(f'\n-ERR 49\nLogin required.\n')
+				else:
+					print(f'-ERR 40 {cmd_usr}\n\nInvalid command.\n')
+				
+
 		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'LOGIN'):
-			print('\nUser already logged in.\n')
+			print('\n-ERR 42\nUser already logged in.\n')
 
 		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'REGISTER'):
-			print('\nSession already initialized.\n')
+			print('\n-ERR 41\nSession already initialized.\n')
 				
 		else:
 			cmd += ' ' + USERNAME
@@ -124,11 +120,11 @@ while True:
 				break
 
 			data = data.decode()
-			print(f'\n{data}')
+			print(data)
 			
 			data = data.split(' ')
 			if data[1] == '22':
-				print('Booklist accessed successfully.')
+				print('Booklist accessed successfully.\n')
 			elif data[1] == '23':
 				print('Book available for loan.\n')
 			elif data[1] == '24':
@@ -146,13 +142,13 @@ while True:
 				break
 			elif data[1] == '40':
 				print('Invalid command.\n')
-			elif data[1] == '43':
-				print('Book not registered.\n')
-			elif data[1] == '44':
-				print('Book unavailable for loan.\n')
 			elif data[1] == '45':
-				print('Unexistent loan for this user.\n')
+				print('Book not registered.\n')
 			elif data[1] == '46':
+				print('Book unavailable for loan.\n')
+			elif data[1] == '47':
+				print('Unexistent loan for this user.\n')
+			elif data[1] == '48':
 				print('Loan already late.\n')
 
 	else:

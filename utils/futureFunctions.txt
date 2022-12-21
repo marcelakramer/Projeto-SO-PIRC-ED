@@ -1,0 +1,8 @@
+Library:
+    def delete_book(self, book_isbn: int) -> None:
+        '''
+        Method to delete a book from the bookshelf
+        
+        '''
+        book = self.__bookshelf.get(book_isbn) # gets the book based on its ISBN
+        self.__bookshelf.delete(book) # deletes the book from the bookshelf

@@ -50,4 +50,7 @@ class Book:
 
         '''
         self.__status = not self.__status
-  
+        
+        
+    def __eq__(self, other: object) -> bool:
+        return self.__id == other

@@ -15,13 +15,15 @@ from src.user import User
 from src.loan import Loan
 from src.book import Book
 
-from structures.bookshelf import AVLTree
+from structures.AVL import AVLTree
 from structures.linkedlist import LinkedList
 from structures.exceptions import AbsentObjectException, UnavailableObjectException
 
 # creates the semaphores 
 mutex_loan = threading.Semaphore(1)
 mutex_check = threading.Semaphore(1)
+mutex_register = threading.Semaphore(1)
+mutex_booklist = threading.Semaphore(1)
 
 # Class Library that manages the library itself
 class Library:
@@ -36,11 +38,8 @@ class Library:
         self.__autoinc = 1 # used for loan ID purposes
         self.__load_books()
         self.__load_users()
-        print(self.__users)
         self.__load_lib_loans()
         
-        
-
 
     @property
     def loans(self) -> object:
@@ -72,8 +71,13 @@ class Library:
         Method to register a new user with its username(id) and password
         
         '''
+        mutex_register.acquire() # up
+
         newUser = User(username, password) # creates a new instance of User object
         self.__users.insert(newUser) # insert the object in the list
+
+        
+        mutex_register.release() # down
         
         
         """
@@ -81,6 +85,15 @@ class Library:
             writer = csv.writer(user_list)
             print(user_list)
             writer.writerow([username,password])"""
+
+    
+    def register_book(self, book_isbn: int, book_title: str) -> None:
+        '''
+        Method to register a new book on the bookshelf
+        
+        '''
+        newBook = Book(book_isbn, book_title) # creates a new book object
+        self.__bookshelf.insert(newBook) # inserts the object in the bookshelf
 
     
     def login(self, username: str, password: str) -> bool:
@@ -91,18 +104,11 @@ class Library:
         
         '''
         user = self.__users.get(username) # gets the user object based in its username
+
         if user.password != password: # check the password
             return False
         
         return True
-
-    def register_book(self, book_isbn: int, book_title: str) -> None:
-        '''
-        Method to register a new book on the bookshelf
-        
-        '''
-        newBook = Book(book_isbn, book_title) # creates a new book object
-        self.__bookshelf.insert(newBook) # inserts the object in the bookshelf
 
 
     def check_book(self, book_isbn: int) -> bool:
@@ -195,22 +201,34 @@ class Library:
         Returns the loan list as a string
         
         '''
-
         user = self.__users.get(username) # gets the user based on its username
-        # updates all loans status 
+        
+        self.update_loans() # updates all loans status 
+        
         list = ''
-        for i in range(1, self.__loans.length + 1):
-            print(i)
-            loan = self.__loans.get(i)
-            loan.update_status(i)
 
-            list += str(loan)
-            
+        # This for loop will look at all the loans in the library_loans list
+        for i in range(1, self.__loans.length + 1):
+            print(self.__loans.get(i).returned)
+            try:
+                loan = user.loans.get(i)
+                list += str(loan)
+
+            except AbsentObjectException:
+                pass # a loan with this ID does not exist, so it must not be considered
+
         return list # returns all the user's loan as a string
     
+    
     def update_loans(self):
-        pass
-
+        '''
+        Method to update the status of all loans
+        
+        '''
+        for i in range(1, self.__loans.length + 1):
+            loan = self.__loans.get(i)
+            loan.update_status(i)
+        
     
     def renew_loan(self, loan_id: int, username: str) -> bool:
         '''
@@ -268,7 +286,6 @@ class Library:
 
         loan = self.__loans.get(loan_id) # gets the loan based on its ID
         loan.returned = True # updates the loan status to RETURNED
-        print(loan.returned)
         loan.update_status(loan_id)
 
         book = loan.book # gets the book from the loan
@@ -297,12 +314,12 @@ class Library:
         shutil.move(tempfile.name, "library_loans.csv")"""
 
 
+
     def __load_users (self):
         with open('registered_users.csv', encoding='utf8') as registered_users:
             user_list = csv.reader(registered_users,delimiter=',')
-            print(user_list)
+
             for user in user_list:
-                print(user)
                 new_user = User(user[0],user[1])
                 self.__users.insert(new_user)
 
@@ -338,13 +355,10 @@ class Library:
         Returns all the books as a string
         
         '''
-        return self.__bookshelf.InOrder() # returns all the books as a string ordered by their ISBN
+        mutex_booklist.acquire() #up
 
+        booklist = self.__bookshelf.InOrder() # returns all the books as a string ordered by their ISBN
 
-    def delete_book(self, book_isbn: int) -> None:
-        '''
-        Method to delete a book from the bookshelf
+        mutex_booklist.release() #down
         
-        '''
-        book = self.__bookshelf.get(book_isbn) # gets the book based on its ISBN
-        self.__bookshelf.delete(book) # deletes the book from the bookshelf
+        return booklist

@@ -148,9 +148,7 @@ class Loan:
         
         if self.__returned == False:
             delta = self.__devolution - date.today()
-            print(delta.days)
             if delta.days < 0:
-                print("entrei")
                 self.__status = 'LATE'
             else:
                 self.__status = 'ON TIME'
