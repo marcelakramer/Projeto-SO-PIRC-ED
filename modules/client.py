@@ -32,6 +32,7 @@ def decode_cmd_usr(cmd_usr):
 if len(sys.argv) == 2:
 	HOST = sys.argv[1]
 elif len(sys.argv) == 3:
+	HOST = sys.argv[1]
 	PORT = int(sys.argv[2])
 
 
