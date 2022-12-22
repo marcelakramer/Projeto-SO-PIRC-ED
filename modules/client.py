@@ -2,82 +2,63 @@
 import socket
 import sys
 
-TAM_MSG = 1024 
+MSG_SIZE = 1024 
 HOST = '127.0.0.1'
 PORT = 40000
 LOGGED = False
 USERNAME = ''
 PASSWORD = ''
 
-def decode_cmd_usr(cmd_usr):
-	cmd_map = {
-		'register': 'register',  # [USERNAME] [PASSWORD] = register a new user
-		'login': 'login', # [USERNAME] [PASSWORD] = log in a registered user
-		'check': 'check', # [BOOK ISBN] = check if a book is available for loan
-		'list': 'list', # = check the user's loan list
-		'loan': 'loan', # [BOOK ISBN] = loan a book
-		'info': 'info', # [LOAN ID] = check loan's info
-		'renew': 'renew', # [LOAN ID] = renew a book loan
-		'return': 'return', # [LOAN ID] = return a book
-		'booklist': 'booklist', # = show all books
-		'quit': 'quit', # quit the connection
-	}
-	tokens = cmd_usr.split()
-	if tokens[0].lower() in cmd_map:
-		return " ".join(tokens)
-	
-	return cmd_usr
-
-		
+# catches the IP or IP/PORT if the client types it
 if len(sys.argv) == 2:
 	HOST = sys.argv[1]
 elif len(sys.argv) == 3:
 	HOST = sys.argv[1]
 	PORT = int(sys.argv[2])
 
+print('Server:', HOST+':'+str(PORT))
 
-print('Servidor:', HOST+':'+str(PORT))
-
-serv = (HOST, PORT)
+# creates the socket and connects it to the host and port
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serv = (HOST, PORT)
 sock.connect(serv)
 
-print('Para encerrar use QUIT ou CTRL+C\n')
+print('To end the connection use QUIT or CTRL+C\n')
 
 while True:
 	try:
-		cmd_usr = input('KES> ')
+		command = input('KES -> ')
 	except KeyboardInterrupt:
 		print('\nDisconnecting...')
 		break
 	
-	if cmd_usr != '':
-		cmd = decode_cmd_usr(cmd_usr)
-
+	if command != '':
+		# checks if the client is not logged 
 		if not LOGGED:
-			if (cmd_usr.split(' ')[0].upper() == 'REGISTER' or cmd_usr.split(' ')[0].upper() == 'LOGIN'):
-				sock.send(str.encode(cmd))
-				data = sock.recv(TAM_MSG)
+			if (command.split(' ')[0].upper() == 'REGISTER' or command.split(' ')[0].upper() == 'LOGIN'):
+				sock.send(str.encode(command)) # sends the command to the server
+				data = sock.recv(MSG_SIZE) # receives a message from the server
 
 				if not data: 
 					break
  
-				data = data.decode()
+				data = data.decode() # decodes the message received from the server
 				print(data)
 
+				# checks the code sent by the server and print the respective message
 				data = data.split(' ')
 				if data[1] == '20':
-					LOGGED = True
-					USERNAME = cmd_usr.split()[1]
-					PASSWORD = cmd_usr.split()[2]
+					LOGGED = True 
+					USERNAME = command.split()[1] # gets the client username
+					PASSWORD = command.split()[2] # gets the client password
 					print('User registered successfully.\n')
 				elif data[1] == '21':
-					USERNAME = cmd_usr.split()[1]
-					PASSWORD = cmd_usr.split()[2]
 					LOGGED = True
+					USERNAME = command.split()[1] # gets the client username
+					PASSWORD = command.split()[2] # gets the client password
 					print('User logged in successfully.\n')
 				elif data[1] == '29':
-					print('Client disconnect request received successfully.\n')
+					print('Client disconnection request received successfully.\n')
 					break
 				elif data[1] == '40':
 					print('Invalid command.\n')
@@ -86,43 +67,48 @@ while True:
 				elif data[1] == '44':
 					print('Username and/or password incorrect.\n')
  
-			elif cmd_usr.split(' ')[0].upper() == 'QUIT':
+			elif command.split(' ')[0].upper() == 'QUIT':
 				
-				sock.send(str.encode(cmd))
-				data = sock.recv(TAM_MSG)
+				sock.send(str.encode(command)) # sends the command to the server
+				data = sock.recv(MSG_SIZE)  # receives a message from the server
 
-				data = data.decode()
+				data = data.decode() # decodes the message received from the server
 
 				data = data.split(' ')
 
+				# checks the code sent by the server and print the respective message
 				if data[1] == '29':
-					print('+OK 29\n\nClient disconnect request received successfully.\n')
+					print('+OK 29\n\nClient disconnection request received successfully.\n')
 					break
      
-			else:
-				if (cmd_usr.split(' ')[0].upper() in ('BOOKLIST', 'CHECK', 'LIST', 'LOAN', 'INFO', 'RENEW', 'RETURN')):
+			else: 
+				# checks if the client tried to insert a valid command
+				if (command.split(' ')[0].upper() in ('BOOKLIST', 'CHECK', 'LIST', 'LOAN', 'INFO', 'RENEW', 'RETURN')):
 					print(f'-ERR 49\n\nLogin required.\n')
 				else:
-					print(f'-ERR 40 {cmd_usr}\n\nInvalid command.\n')
+					print(f'-ERR 40 {command}\n\nInvalid command.\n')
 				
-
-		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'LOGIN'):
+		# checks if the client is logged and sent a 'login' command
+		elif LOGGED and (command.split(' ')[0].upper() == 'LOGIN'):
 			print('-ERR 42\n\nUser already logged in.\n')
 
-		elif LOGGED and (cmd_usr.split(' ')[0].upper() == 'REGISTER'):
+		# checks if the client is logged and sent a 'register' command
+		elif LOGGED and (command.split(' ')[0].upper() == 'REGISTER'):
 			print('-ERR 41\n\nSession already initialized.\n')
-				
+
+		# the client is logged and sent a valid command		
 		else:
-			cmd += ' ' + USERNAME
-			sock.send(str.encode(cmd))
-			data = sock.recv(TAM_MSG)
+			command += ' ' + USERNAME # attachs the client's username on the command
+			sock.send(str.encode(command)) # sends the command to the server
+			data = sock.recv(MSG_SIZE) # receives a message from the server
 
 			if not data: 
 				break
 
-			data = data.decode()
+			data = data.decode() # decodes the message received from the server
 			print(data)
 			
+			# checks the code sent by the server and print the respective message
 			data = data.split(' ')
 			if data[1] == '22':
 				print('Booklist accessed successfully.\n')
@@ -152,7 +138,8 @@ while True:
 			elif data[1] == '48':
 				print('Loan already late.\n')
 
+	# if the command typed by the user does not match any of the valid commands
 	else:
-		print(f'\n-ERR 40 {cmd_usr}\n\nInvalid command.\n')
+		print(f'\n-ERR 40 {command}\n\nInvalid command.\n')
 
-sock.close()
+sock.close() # closes the socket

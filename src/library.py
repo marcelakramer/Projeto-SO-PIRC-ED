@@ -1,8 +1,6 @@
 # Initial imports
 from datetime import date, timedelta
 
-import threading
-
 import csv
 import sys
 sys.path.append('./..') # allows the /src and /strcutures files import
@@ -14,12 +12,6 @@ from src.book import Book
 from structures.AVL import AVLTree
 from structures.linkedlist import LinkedList
 from structures.exceptions import AbsentObjectException, UnavailableObjectException
-
-# creates the semaphores 
-mutex_loan = threading.Semaphore(1)
-mutex_check = threading.Semaphore(1)
-mutex_register = threading.Semaphore(1)
-mutex_booklist = threading.Semaphore(1)
 
 # Class Library that manages the library itself
 class Library:
@@ -67,13 +59,9 @@ class Library:
         Method to register a new user with its username(id) and password
         
         '''
-        mutex_register.acquire() # up
-
         newUser = User(username, password) # creates a new instance of User object
         self.__users.insert(newUser) # insert the object in the list
-        
-        mutex_register.release() # down
-    
+
         with open('registered_users.csv', 'a+', newline='', encoding='utf8') as user_list:
             writer = csv.writer(user_list)
             writer.writerow([username,password])
@@ -120,18 +108,13 @@ class Library:
         Returns either True of False
         
         '''
-        mutex_check.acquire() # 'up' on the semaphore
-      
+    
         if not self.check_book(book_isbn): # checks if the book exists on the bookshelf
-            mutex_check.release() # 'down' on the semaphore
-            mutex_loan.release() # 'down' on loan semaphore
             raise AbsentObjectException
         
         book = self.__bookshelf.get(book_isbn) # gets the book based on its isbn
     
-        is_available = book.status # get the book status 
-
-        mutex_check.release() # 'down' on the semaphore
+        is_available = book.status # get the book status
 
         return is_available # returns the book status
 
@@ -143,10 +126,8 @@ class Library:
         Returns either True or False
         
         '''
-        mutex_loan.acquire() # 'up' on the semaphore
 
         if not self.check_available(book_isbn): # check if the book is available
-            mutex_loan.release() # 'down' on the semaphore
             raise UnavailableObjectException
 
         user = self.__users.get(username) # gets the user based on its username
@@ -160,8 +141,6 @@ class Library:
     
         self.loans.insert(newLoan) # inserts the loan on the library loan list
         user.loans.insert(newLoan) # inserts the loan on the user loan list
-        
-        mutex_loan.release() # 'down' on the semaphore
 
         return True, newLoan.id # returns the loan ID
 
@@ -282,8 +261,6 @@ class Library:
             for loan in loans:
                 user = self.__users.get(loan[-1])
                 book = self.__bookshelf.get(int(loan[1]))
-
-                mutex_loan.acquire()
                 
                 book.update_status()
 
@@ -300,8 +277,6 @@ class Library:
                 # Inserts
                 self.loans.insert(newLoan)
                 user.loans.insert(newLoan)
-
-                mutex_loan.release()
     
 
     def __load_books(self):
@@ -323,10 +298,6 @@ class Library:
         Returns all the books as a string
         
         '''
-        mutex_booklist.acquire() #up
-
         booklist = self.__bookshelf.InOrder() # gets all the books as a string ordered by their ISBN
 
-        mutex_booklist.release() #down
-        
         return booklist # returns the string

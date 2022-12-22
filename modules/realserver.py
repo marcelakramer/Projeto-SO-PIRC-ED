@@ -1,31 +1,37 @@
-from tempfile import NamedTemporaryFile
-import shutil
+# Initial imports
 import csv
-
-
 import sys
-sys.path.append('./..')
+import socket
+import threading
+import time
+
+sys.path.append('./..') # allows the /src and /strcutures files import
 
 #import src.library as Library
 from src.library import Library
 from structures.exceptions import *
 
-
-import socket
-import threading
-
-TAM_MSG = 1024 
+MSG_SIZE = 1024 
 HOST = '0.0.0.0' 
-PORT = 40002
+PORT = 40000
 
-mutex = threading.Semaphore(1)
+# creates the semaphores 
+mutex_loan = threading.Semaphore(1)
+mutex_check = threading.Semaphore(1)
+mutex_register = threading.Semaphore(1)
+mutex_booklist = threading.Semaphore(1)
 
-def process_msg_client(msg, con, client):
+def client_msg_handler(con, client, msg):
 	msg = msg.decode()
+
 	print(f'Client {client} sent {msg}')
+
 	msg = msg.split()
 
 	if msg[0].upper() == 'REGISTER' and len(msg) == 3:
+
+		mutex_register.acquire()
+
 		try:
 			library.register_user(msg[1],msg[2]) # tries to register a new user passing the username and the password
 			con.send(str.encode(f"+OK 20 {msg[1]}\n")) # sends successful status to the client
@@ -34,6 +40,8 @@ def process_msg_client(msg, con, client):
 		# If it alteady exists
 		except AlreadyExistingObjectException:
 			con.send(str.encode(f'-ERR 43 \n'))
+
+		mutex_register.release()
 
 	elif msg[0].upper() == 'LOGIN' and len(msg) == 3:
 		try:
@@ -49,15 +57,22 @@ def process_msg_client(msg, con, client):
 
 	# List all books
 	elif msg[0].upper() == 'BOOKLIST' and len(msg) == 2:
+
+		mutex_booklist.acquire()
+
 		# calls method that returns an "inOrder" of all books
 		booklist = library.bookList() 
 
 		# sends successful status to the client
 		con.send(str.encode(f"+OK 22 \n{booklist}")) 
 
+		mutex_booklist.release()
 
 	# Check if a book is available
 	elif msg[0].upper() == 'CHECK' and len(msg) == 3 and msg[1].isdigit():
+
+		mutex_check.acquire()
+
 		try:
 			# Gets the title of the book based on the ISBN
 			book_title = library.bookshelf.get(int(msg[1])).title
@@ -72,9 +87,14 @@ def process_msg_client(msg, con, client):
 		except AbsentObjectException:
 			con.send(str.encode(f"-ERR 45 \n"))
 
-			
+		mutex_check.release()
+
 	# Tries to loan a book
 	elif msg[0].upper() == 'LOAN' and len(msg) == 3 and msg[1].isdigit():
+
+		mutex_loan.acquire()
+		time.sleep(10)
+
 		try:
 			# Calls loan method passing the ISBN and the username
 			
@@ -94,7 +114,8 @@ def process_msg_client(msg, con, client):
 		# If a book is not available for loan:
 		except UnavailableObjectException:
 			con.send(str.encode(f"-ERR 46 \n"))
-		
+
+		mutex_loan.release()
 			
 	# Checks the info of a loan
 	elif msg[0].upper() == 'INFO' and len(msg) == 3 and msg[1].isdigit():
@@ -145,6 +166,7 @@ def process_msg_client(msg, con, client):
 	# To finish a client connection
 	elif msg[0].upper() == 'QUIT' and (len(msg) == 1 or len(msg) == 2): 
 
+		# writes all the loans in the libray_loans file when the client sends quit
 		with open("library_loans.csv", "w") as loans:
 				reader = library.loans
 				writer = csv.writer(loans)
@@ -157,9 +179,6 @@ def process_msg_client(msg, con, client):
 		con.send(str.encode('+OK 29 \n')) # sends successful status to the client
 		return False
 
-
-
-
 	# If none of those methods matched the user input:
 	else:
 		msg = (' ').join(msg[:-1])
@@ -168,23 +187,25 @@ def process_msg_client(msg, con, client):
 
 
 # Handles every new client connection
-def process_client(con, client):
+def client_handler(con, client):
 	print('Connected client: ', client)
+	
 	while True:
-		msg = con.recv(TAM_MSG)
-		if not msg or not process_msg_client(msg, con, client):
+		msg = con.recv(MSG_SIZE)
+		if not msg or not client_msg_handler(con, client, msg):
 			break
 
-	
-	con.close()
+	con.close() # closes the connection with the client
+
 	print('Disconnected client: ', client)
-	
+
+# creates the socket and connects it to the host and port	
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serv = (HOST, PORT)
 sock.bind(serv)
 sock.listen(50)
 
-library = Library()
+library = Library() # creates a library instance
 
 while True:
 	try:
@@ -192,6 +213,6 @@ while True:
 	except:
 		break
 
-	threading.Thread(target=process_client, args=(con, client)).start()
+	threading.Thread(target=client_handler, args=(con, client)).start() # creates a different thread to each client connected
 
-sock.close()
+sock.close() # closes the socket
