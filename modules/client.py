@@ -16,14 +16,12 @@ elif len(sys.argv) == 3:
 	HOST = sys.argv[1]
 	PORT = int(sys.argv[2])
 
-print('Server:', HOST+':'+str(PORT))
+print('Library System\nServer:', HOST+':'+str(PORT)+'\n')
 
 # creates the socket and connects it to the host and port
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serv = (HOST, PORT)
 sock.connect(serv)
-
-print('To end the connection use QUIT or CTRL+C\n')
 
 while True:
 	try:

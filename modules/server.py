@@ -3,7 +3,6 @@ import csv
 import sys
 import socket
 import threading
-import time
 
 sys.path.append('./..') # allows the /src and /strcutures files import
 
@@ -93,7 +92,6 @@ def client_msg_handler(con, client, msg):
 	elif msg[0].upper() == 'LOAN' and len(msg) == 3 and msg[1].isdigit():
 
 		mutex_loan.acquire()
-		time.sleep(10)
 
 		try:
 			# Calls loan method passing the ISBN and the username
