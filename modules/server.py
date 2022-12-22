@@ -91,6 +91,7 @@ def client_msg_handler(con, client, msg):
 	# Tries to loan a book
 	elif msg[0].upper() == 'LOAN' and len(msg) == 3 and msg[1].isdigit():
 
+		mutex_check.acquire()
 		mutex_loan.acquire()
 
 		try:
@@ -114,6 +115,7 @@ def client_msg_handler(con, client, msg):
 			con.send(str.encode(f"-ERR 46 \n"))
 
 		mutex_loan.release()
+		mutex_check.release()
 			
 	# Checks the info of a loan
 	elif msg[0].upper() == 'INFO' and len(msg) == 3 and msg[1].isdigit():
