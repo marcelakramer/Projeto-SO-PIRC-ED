@@ -165,7 +165,7 @@ def client_msg_handler(con, client, msg):
 	elif msg[0].upper() == 'QUIT' and (len(msg) == 1 or len(msg) == 2): 
 
 		# writes all the loans in the libray_loans file when the client sends quit
-		with open("library_loans.csv", "w") as loans:
+		with open("library_loans.csv", "w", newline='') as loans:
 				reader = library.loans
 				writer = csv.writer(loans)
 
